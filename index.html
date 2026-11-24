@@ -1721,6 +1721,20 @@
           showToast(`Loaded ${visibleModels.length} models — prioritized ${visibleModels[0].id}`, "success");
         }
       } catch (err) {
+        console.warn("Model fetch failed:", err);
+        statusEl.className = "mt-1.5 text-[11px] text-red-600 font-medium leading-relaxed";
+        statusEl.textContent = `Could not fetch live models (${err.message || "Check API key"}). Using default list.`;
+        renderModelSelectOptions();
+        if (!silent) {
+          showToast(`Failed to fetch models: ${err.message || "Verify your API key."}`, "error");
+        }
+      } finally {
+        btn.disabled = false;
+        spin.classList.add("hidden");
+        btnLabel.textContent = "Fetch Models";
+      }
+    }
+
     /** Render the unified model selector dropdown with Free-Tier & Lite models clearly tagged first. */
     function renderModelSelectOptions() {
       const provider = state.config.provider;
@@ -1781,45 +1795,6 @@
             ? `Click "Fetch Models" to load live ${provider === "gemini" ? "Gemini" : "OpenAI"} models (free-tier lite prioritized).`
             : `Paste your API key to auto-fetch live models. Stored locally in your browser cookie.`;
         }
-      }
-    }
-
-    /** Render the unified model selector dropdown with Lite models clearly tagged first. */
-    function renderModelSelectOptions() {
-      const provider = state.config.provider;
-      const select = document.getElementById("select-ai-model");
-      const statusEl = document.getElementById("model-fetch-status");
-      if (!select) return;
-
-      const isLive = runtimeModels[provider].length > 0;
-      const list = isLive ? [...runtimeModels[provider]] : [...FALLBACK_MODELS[provider]];
-      const selectedId = getActiveModel();
-
-      if (selectedId && !list.some((m) => m.id === selectedId)) {
-        list.unshift({
-          id: selectedId,
-          displayName: selectedId,
-          isLite: isLiteModel(provider, selectedId)
-        });
-      }
-
-      select.innerHTML = list.map((m, idx) => {
-        const tag = m.isLite
-          ? (idx === 0 ? " ★ Lite (Recommended)" : " [Lite]")
-          : "";
-        const label = m.displayName && m.displayName !== m.id
-          ? `${m.id} — ${m.displayName}${tag}`
-          : `${m.id}${tag}`;
-        return `<option value="${escapeHtml(m.id)}">${escapeHtml(label)}</option>`;
-      }).join("");
-
-      select.value = selectedId;
-
-      if (!isLive && statusEl) {
-        statusEl.className = "mt-1.5 text-[11px] text-stone-500 leading-relaxed";
-        statusEl.textContent = getActiveApiKey()
-          ? `Click "Fetch Models" to load live ${provider === "gemini" ? "Gemini" : "OpenAI"} models (lite prioritized).`
-          : `Paste your API key to auto-fetch live models. Stored locally in your browser cookie.`;
       }
     }
 
@@ -2207,97 +2182,6 @@ Produce a complete, conflict-free make-ahead guide and chronological cooking tim
       }
       throw lastErr || new Error("Unable to generate schedule with Gemini.");
     }
-          throw err;
-        }
-      }
-      throw new Error("Request failed after retries.");
-    }
-
-    /** Call Google Gemini API using the dynamically selected model and dynamic station schema. */
-    async function callGeminiAPI() {
-      const apiKey = getActiveApiKey();
-      const modelId = getActiveModel();
-      const stationEnum = Object.keys(getStationsMap());
-      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelId)}:generateContent?key=${encodeURIComponent(apiKey)}`;
-
-      const payload = {
-        systemInstruction: {
-          parts: [{ text: buildSystemPrompt() }]
-        },
-        contents: [
-          {
-            role: "user",
-            parts: [{ text: buildUserPrompt() }]
-          }
-        ],
-        generationConfig: {
-          responseMimeType: "application/json",
-          responseSchema: {
-            type: "OBJECT",
-            properties: {
-              mealSummary: { type: "STRING" },
-              ovenStrategy: { type: "STRING" },
-              makeAheadItems: {
-                type: "ARRAY",
-                items: {
-                  type: "OBJECT",
-                  properties: {
-                    id: { type: "STRING" },
-                    dish: { type: "STRING" },
-                    whenToMake: { type: "STRING" },
-                    durationMinutes: { type: "INTEGER" },
-                    station: {
-                      type: "STRING",
-                      enum: stationEnum
-                    },
-                    instructions: { type: "STRING" },
-                    storageAndReheat: { type: "STRING" }
-                  },
-                  required: ["id", "dish", "whenToMake", "durationMinutes", "station", "instructions", "storageAndReheat"]
-                }
-              },
-              timelineSteps: {
-                type: "ARRAY",
-                items: {
-                  type: "OBJECT",
-                  properties: {
-                    id: { type: "STRING" },
-                    offsetMinutesBeforeServe: { type: "INTEGER" },
-                    phase: { type: "STRING" },
-                    dish: { type: "STRING" },
-                    title: { type: "STRING" },
-                    instructions: { type: "STRING" },
-                    durationMinutes: { type: "INTEGER" },
-                    needsTimer: { type: "BOOLEAN" },
-                    timerLabel: { type: "STRING" },
-                    station: {
-                      type: "STRING",
-                      enum: stationEnum
-                    },
-                    temperature: { type: "STRING" },
-                    tips: { type: "STRING" }
-                  },
-                  required: ["id", "offsetMinutesBeforeServe", "phase", "dish", "title", "instructions", "durationMinutes", "needsTimer", "station"]
-                }
-              }
-            },
-            required: ["mealSummary", "ovenStrategy", "makeAheadItems", "timelineSteps"]
-          }
-        }
-      };
-
-      const result = await fetchWithBackoff(apiUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-
-      const rawText = result?.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (!rawText) {
-        throw new Error(`Gemini (${modelId}) returned an empty response. Please verify your API key and selected model.`);
-      }
-      return JSON.parse(rawText);
-    }
 
     /** Call OpenAI ChatGPT API (`chat/completions`) using the dynamically selected model. */
     async function callOpenAIAPI() {
@@ -2384,9 +2268,11 @@ Output strictly a single JSON object with this exact shape:
         return;
       }
 
-      if (state.config.provider === "openai" && !getActiveApiKey()) {
-        errorText.textContent = "Please enter your OpenAI API key to use ChatGPT.";
+      if (!getActiveApiKey()) {
+        const providerName = state.config.provider === "gemini" ? "Gemini" : "OpenAI";
+        errorText.textContent = `Please enter your ${providerName} API key in the top-right gear menu first.`;
         errorBox.classList.remove("hidden");
+        openAiSettingsModal(false);
         return;
       }
 
