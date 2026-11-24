@@ -1149,8 +1149,8 @@
         { id: "gemini-3.1-flash-lite", displayName: "Gemini 3.1 Flash-Lite", isLite: true, isFreeTier: true }
       ],
       groq: [
-        { id: "llama-3.1-8b-instant", displayName: "Llama 3.1 8B Instant (Fast Free)", isLite: true, isFreeTier: true },
-        { id: "llama-3.3-70b-versatile", displayName: "Llama 3.3 70B Versatile (Free)", isLite: false, isFreeTier: true },
+        { id: "llama-3.3-70b-versatile", displayName: "Llama 3.3 70B Versatile (Best Free Quality)", isLite: false, isFreeTier: true },
+        { id: "llama-3.1-8b-instant", displayName: "Llama 3.1 8B Instant (Fast Lite)", isLite: true, isFreeTier: true },
         { id: "qwen/qwen3-32b", displayName: "Qwen 3 32B (Free)", isLite: false, isFreeTier: true }
       ],
       openrouter: [
@@ -1192,7 +1192,7 @@
         serveTime: "17:00",
         provider: "gemini", // 'gemini' | 'groq' | 'openrouter' | 'openai' | 'manual'
         geminiModel: "gemini-2.5-flash-lite",
-        groqModel: "llama-3.1-8b-instant",
+        groqModel: "llama-3.3-70b-versatile",
         openrouterModel: "google/gemma-3-27b-it:free",
         openaiModel: "gpt-4.1-nano",
         geminiApiKey: "",
@@ -1828,9 +1828,9 @@
       }
       if (provider === "groq") {
         let tier = 4;
-        if (lower.includes("llama-3.1-8b-instant")) tier = 0;
-        else if (lower.includes("llama-3.3-70b")) tier = 1;
-        else if (lower.includes("llama-4") || lower.includes("qwen")) tier = 2;
+        if (lower.includes("llama-3.3-70b")) tier = 0;
+        else if (lower.includes("qwen") || lower.includes("llama-4")) tier = 1;
+        else if (lower.includes("llama-3.1-8b-instant")) tier = 2;
         else if (isLiteModel("groq", lower)) tier = 3;
         return tier * 1000 - ver * 10;
       }
@@ -2435,19 +2435,48 @@
     }
 
     function buildSystemPrompt() {
+      const serveMins = parseServeTimeMinutes(state.config.serveTime);
+      const serveClock = formatClockTime(serveMins);
+      const exStep1 = formatClockTime(serveMins - 260);
+      const exStep2 = formatClockTime(serveMins - 235);
+      const exStep3 = formatClockTime(serveMins - 85);
+      const exStep4 = formatClockTime(serveMins - 40);
+
       return `You are an expert executive chef and kitchen logistics orchestrator specializing in large multi-dish meals (like Thanksgiving or holiday feasts).
 
 CRITICAL HARDWARE CONSTRAINTS — YOU MUST STRICTLY OBEY THESE:
 ${buildKitchenConstraintsForPrompt()}
 
-MAKE-AHEAD IDENTIFICATION:
-- Explicitly identify every dish or component that can be made ahead of time (hours or 1-2 days before) and set aside. Explain how to store it and when/how to reheat or bring it to serving temperature.
-- Also include a brief reheating/serving step in the main timeline for make-ahead items if they need warming before dinner.
+CRITICAL BACKWARD-SCHEDULING RULES (READ CAREFULLY — DO NOT START COOKING AT SERVING TIME!):
+- Target serving time is ${serveClock}. ALL cooking, roasting, baking, simmering, and resting MUST FINISH AT OR BEFORE ${serveClock} so hot food hits the table at ${serveClock}.
+- NEVER start cooking at ${serveClock}! Work BACKWARD from ${serveClock} using every dish's prep + cook + rest times.
+- Every step in "timelineSteps" MUST include BOTH:
+  1. "startTime": The 12-hour clock time when that step BEGINS (e.g., "${exStep1}", "${exStep2}", "${serveClock}").
+  2. "offsetMinutesBeforeServe": A POSITIVE integer representing how many minutes BEFORE ${serveClock} that step BEGINS.
+     - Example for serving at ${serveClock}:
+       * ${exStep1} (4h 20m before dinner): offsetMinutesBeforeServe = 260, durationMinutes = 25 (Preheat oven & season turkey)
+       * ${exStep2} (3h 55m before dinner): offsetMinutesBeforeServe = 235, durationMinutes = 150 (Roast turkey covered at 325°F)
+       * ${exStep3} (1h 25m before dinner): offsetMinutesBeforeServe = 85, durationMinutes = 45 (Uncover turkey to brown)
+       * ${exStep4} (40m before dinner): offsetMinutesBeforeServe = 40, durationMinutes = 40 (Rest turkey on counter; oven is now free to bake stuffing!)
+       * ${serveClock} (dinner is served!): offsetMinutesBeforeServe = 0, durationMinutes = 0 (Carve turkey & serve all dishes hot)
+- FINISH-BY-SERVING RULE: For every cooking, baking, roasting, boiling, simmering, or resting step, "offsetMinutesBeforeServe" MUST BE >= "durationMinutes" (so the step ends at or before ${serveClock}). Only final plating/carving/serving at the very end should have offsetMinutesBeforeServe = 0.
+- Sort "timelineSteps" chronologically from EARLIEST step (largest positive offsetMinutesBeforeServe) down to serving time (offsetMinutesBeforeServe = 0).
+- NEVER use negative numbers for offsetMinutesBeforeServe, and NEVER count forward from 0 for the first step.
 
-TIMING & TIMERS:
-- Every timeline step MUST include "offsetMinutesBeforeServe" (an integer representing how many minutes BEFORE serving time that step begins; e.g., 240 = 4 hours before dinner, 0 = serve time).
-- Sort "timelineSteps" chronologically from largest "offsetMinutesBeforeServe" down to 0.
-- Set "needsTimer": true and provide a clear "timerLabel" and accurate "durationMinutes" for EVERY cooking, baking, simmering, boiling, sautéing, roasting, or resting step that benefits from a kitchen countdown timer.
+DETAILED, ACTIONABLE KITCHEN INSTRUCTIONS (NO VAGUE SUMMARIES!):
+- Cover EVERY SINGLE RECIPE completely from prep through final serving — do not skip any dish or ingredient.
+- Break each recipe into clear, practical steps (typically 2 to 5 steps per dish: prep/preheat, primary cook, secondary stage/finish/rest, warm/serve).
+- Every step's "instructions" MUST be self-contained and specific enough to cook from without looking back at the recipe:
+  * Include EXACT ingredient amounts from the user's recipe (e.g., "1/2 cup softened butter, 2 cups chicken broth, 4 cloves garlic").
+  * Include exact cookware/pan size, oven temperature or burner heat level (e.g., "350°F", "Medium-Low simmer"), and doneness cues (e.g., "until breast reaches 165°F", "until fork-tender").
+  * State clearly what to do when the timer finishes (e.g., "Drain well, return to warm pot, mash with butter & warm cream, cover to keep warm").
+
+MAKE-AHEAD IDENTIFICATION:
+- Explicitly identify every dish or component that can be made ahead of time (hours or 1-2 days before) and set aside. Give complete step-by-step prep instructions (with ingredient amounts), storage instructions, and reheating instructions.
+- Also include a brief reheating/warming or plating step in "timelineSteps" for make-ahead items before ${serveClock}.
+
+TIMERS:
+- Set "needsTimer": true and provide a clear "timerLabel" and accurate "durationMinutes" for EVERY cooking, baking, simmering, boiling, sautéing, roasting, or resting step.
 
 Return ONLY valid JSON matching the requested schema.`;
     }
@@ -2458,25 +2487,28 @@ Return ONLY valid JSON matching the requested schema.`;
       )).join("\n\n---\n\n");
 
       const stationIds = Object.keys(getStationsMap()).join(", ");
+      const serveClock = formatClockTime(parseServeTimeMinutes(state.config.serveTime));
 
       return `Meal Occasion: ${state.config.mealName}
-Target Serving Time: ${state.config.serveTime}
+Target Serving Time (FOOD ON TABLE — NOT COOKING START TIME): ${serveClock} (${state.config.serveTime})
 Kitchen Equipment: ${formatKitchenSummaryText()} (station IDs: ${stationIds}).
 
-Here are all the recipes to coordinate:
+Here are all ${state.recipes.length} recipes to coordinate:
 
 ${recipeBlock}
 
-Produce a complete, conflict-free make-ahead guide and chronological cooking timeline with timer durations so everything finishes hot and ready at serving time.`;
+Build a complete, conflict-free make-ahead guide and detailed chronological cooking timeline working BACKWARD from ${serveClock} so every dish finishes hot and ready to serve at ${serveClock}. Include exact ingredient quantities, temperatures, doneness cues, and timer durations in every step.`;
     }
 
     /** Shared strict JSON shape instructions used by Gemma, Groq, OpenRouter, OpenAI, and Copy & Paste Mode. */
     function buildJsonSchemaInstruction() {
       const stationPipeList = Object.keys(getStationsMap()).join(" | ");
+      const serveMins = parseServeTimeMinutes(state.config.serveTime);
+      const exampleStart = formatClockTime(serveMins - 240);
       return `Output strictly a single valid JSON object (no markdown commentary before or after) with this exact shape:
 {
-  "mealSummary": "string",
-  "ovenStrategy": "string",
+  "mealSummary": "string (brief overview including earliest start time and how dishes finish together)",
+  "ovenStrategy": "string (exact oven temp staging & handoff plan)",
   "makeAheadItems": [
     {
       "id": "ma-1",
@@ -2484,18 +2516,19 @@ Produce a complete, conflict-free make-ahead guide and chronological cooking tim
       "whenToMake": "string (e.g. 1-2 days ahead)",
       "durationMinutes": 20,
       "station": "${stationPipeList}",
-      "instructions": "string",
-      "storageAndReheat": "string"
+      "instructions": "string (detailed step-by-step with ingredient quantities)",
+      "storageAndReheat": "string (how to store and reheat/serve)"
     }
   ],
   "timelineSteps": [
     {
       "id": "step-1",
+      "startTime": "${exampleStart}",
       "offsetMinutesBeforeServe": 240,
       "phase": "string (e.g. Early Prep, Roasting, Final Push, Serving)",
       "dish": "string",
-      "title": "string",
-      "instructions": "string",
+      "title": "string (clear action headline)",
+      "instructions": "string (detailed step with exact quantities, pan, heat/temp, doneness cue & handoff)",
       "durationMinutes": 30,
       "needsTimer": true,
       "timerLabel": "string",
@@ -2667,6 +2700,8 @@ Produce a complete, conflict-free make-ahead guide and chronological cooking tim
         systemInstruction: { parts: [{ text: buildSystemPrompt() }] },
         contents: [{ role: "user", parts: [{ text: buildUserPrompt() }] }],
         generationConfig: {
+          temperature: 0.25,
+          maxOutputTokens: 8192,
           responseMimeType: "application/json",
           responseSchema: {
             type: "OBJECT",
@@ -2695,6 +2730,7 @@ Produce a complete, conflict-free make-ahead guide and chronological cooking tim
                   type: "OBJECT",
                   properties: {
                     id: { type: "STRING" },
+                    startTime: { type: "STRING" },
                     offsetMinutesBeforeServe: { type: "INTEGER" },
                     phase: { type: "STRING" },
                     dish: { type: "STRING" },
@@ -2707,13 +2743,22 @@ Produce a complete, conflict-free make-ahead guide and chronological cooking tim
                     temperature: { type: "STRING" },
                     tips: { type: "STRING" }
                   },
-                  required: ["id", "offsetMinutesBeforeServe", "phase", "dish", "title", "instructions", "durationMinutes", "needsTimer", "station"]
+                  required: ["id", "startTime", "offsetMinutesBeforeServe", "phase", "dish", "title", "instructions", "durationMinutes", "needsTimer", "station"]
                 }
               }
             },
             required: ["mealSummary", "ovenStrategy", "makeAheadItems", "timelineSteps"]
           }
         }
+      };
+
+      // Gemma models reject systemInstruction & responseSchema, so we fold instructions into a single user turn
+      const gemmaPayload = {
+        contents: [{
+          role: "user",
+          parts: [{ text: `${buildSystemPrompt()}\n\n${buildJsonSchemaInstruction()}\n\n${buildUserPrompt()}` }]
+        }],
+        generationConfig: { temperature: 0.25, maxOutputTokens: 8192 }
       };
 
       // Gemma models reject systemInstruction & responseSchema, so we fold instructions into a single user turn
@@ -2821,31 +2866,252 @@ Produce a complete, conflict-free make-ahead guide and chronological cooking tim
           payload.response_format = { type: "json_object" };
         }
         if (!/^(o1|o3|o4|gpt-5)/i.test(modelId)) {
-          payload.temperature = 0.3;
+          payload.temperature = 0.25;
+          payload.max_tokens = 6000;
         }
+    /** Parse a 12-hour or 24-hour clock string (e.g., "1:05 PM" or "13:05") into minutes since midnight. */
+    function parseClockStringToMinutes(str) {
+      if (!str || typeof str !== "string") return null;
+      const m = str.trim().match(/^(\d{1,2}):(\d{2})(?:\s*(am|pm))?$/i);
+      if (!m) return null;
+      let hours = parseInt(m[1], 10);
+      const mins = parseInt(m[2], 10);
+      const meridiem = m[3] ? m[3].toLowerCase() : null;
+      if (Number.isNaN(hours) || Number.isNaN(mins) || mins < 0 || mins > 59) return null;
+      if (meridiem) {
+        if (hours < 1 || hours > 12) return null;
+        if (meridiem === "pm" && hours !== 12) hours += 12;
+        if (meridiem === "am" && hours === 12) hours = 0;
+      } else if (hours < 0 || hours > 23) {
+        return null;
+      }
+      return hours * 60 + mins;
+    }
 
-        const retriesForThisModel = candidates.length > 1 ? 1 : 2;
+    /** Heuristic to detect final plating / carving / serving steps that legitimately happen at serve time (offset 0). */
+    function isLikelyServeStep(step) {
+      const text = `${step.phase || ""} ${step.title || ""}`.toLowerCase();
+      return /\b(serve|serving|plate|plating|carve|carving|dinner|table|enjoy)\b/.test(text) && (step.durationMinutes || 0) <= 15;
+    }
 
-        try {
-          let result;
-          try {
-            result = await fetchWithBackoff(endpoint, {
-              method: "POST",
-              headers,
-              body: JSON.stringify(payload)
-            }, retriesForThisModel);
-          } catch (firstErr) {
-            // If Groq rejects json_object mode with HTTP 400, retry once without response_format
-            if (provider === "groq" && firstErr.status === 400 && payload.response_format) {
-              delete payload.response_format;
-              result = await fetchWithBackoff(endpoint, {
-                method: "POST",
-                headers,
-                body: JSON.stringify(payload)
-              }, 1);
-            } else {
-              throw firstErr;
-            }
+    /**
+     * Sanitize & auto-repair AI step timings so cooking NEVER starts at serving time:
+     * 1. Converts negative offsets (e.g., -240 -> 240).
+     * 2. Cross-checks against AI-provided `startTime` clock strings if offsets are missing/broken.
+     * 3. Detects forward-counted elapsed minutes (0 -> totalDuration) and inverts them to backward offsets.
+     * 4. Reconstructs sequential backward offsets if a lightweight model left all offsets at 0.
+     * 5. Shifts cooking steps earlier if any step would finish past the target serving time.
+     */
+    function sanitizeStepTimings(rawSteps, serveTimeHHMM) {
+      const serveMins = parseServeTimeMinutes(serveTimeHHMM);
+      let autoAdjusted = false;
+
+      const items = rawSteps.map((s, idx) => {
+        const parsedRaw = parseInt(s.offsetMinutesBeforeServe, 10);
+        const duration = Math.max(0, parseInt(s.durationMinutes, 10) || 0);
+        const parsedClock = parseClockStringToMinutes(s.startTime);
+        let clockOffset = null;
+        if (parsedClock !== null) {
+          let diff = serveMins - parsedClock;
+          if (diff < -720) diff += 1440; // handle past-midnight serve time
+          if (diff >= 0 && diff <= 1080) clockOffset = diff;
+        }
+        return {
+          raw: s,
+          idx,
+          rawOffset: Number.isNaN(parsedRaw) ? null : parsedRaw,
+          offset: Number.isNaN(parsedRaw) ? 0 : parsedRaw,
+          duration,
+          clockOffset
+        };
+      });
+
+      // 1. Handle negative offsets (e.g., AI wrote -240 instead of 240)
+      if (items.some((x) => x.offset < 0)) {
+        items.forEach((x) => {
+          if (x.offset < 0) x.offset = Math.abs(x.offset);
+        });
+        autoAdjusted = true;
+      }
+
+      // 2. Check if AI's `startTime` strings are well-formed backward clock times while `offset` is broken/zero/increasing
+      const validClockItems = items.filter((x) => x.clockOffset !== null);
+      const rawMax = items.reduce((m, x) => Math.max(m, x.offset), 0);
+      const clockMax = validClockItems.reduce((m, x) => Math.max(m, x.clockOffset), 0);
+      const rawOverruns = items.filter((x) => !isLikelyServeStep(x.raw) && x.duration > 0 && x.offset < x.duration).length;
+      const clockOverruns = validClockItems.filter((x) => !isLikelyServeStep(x.raw) && x.duration > 0 && x.clockOffset < x.duration).length;
+
+      if (
+        validClockItems.length >= Math.ceil(items.length * 0.6) &&
+        clockMax > 0 &&
+        (rawMax === 0 || (rawOverruns > clockOverruns && rawOverruns >= Math.ceil(items.length * 0.3)))
+      ) {
+        items.forEach((x) => {
+          if (x.clockOffset !== null) x.offset = x.clockOffset;
+        });
+        autoAdjusted = true;
+      } else if (items.length >= 2) {
+        // 3. Detect forward counting from 0 (elapsed minutes: 0, 25, 175, 220 instead of 265, 240, 90, 0)
+        let inc = 0;
+        let dec = 0;
+        for (let i = 0; i < items.length - 1; i++) {
+          if (items[i].offset < items[i + 1].offset) inc++;
+          else if (items[i].offset > items[i + 1].offset) dec++;
+        }
+        const first = items[0];
+        const last = items[items.length - 1];
+        const looksForwardCounted =
+          last.offset > first.offset &&
+          inc > dec &&
+          !isLikelyServeStep(first.raw) &&
+          (first.offset === 0 || isLikelyServeStep(last.raw) || first.duration > first.offset);
+
+        if (looksForwardCounted) {
+          const totalEnd = items.reduce((m, x) => Math.max(m, x.offset + x.duration), last.offset);
+          items.forEach((x) => {
+            x.offset = Math.max(0, totalEnd - x.offset);
+          });
+          autoAdjusted = true;
+        }
+      }
+
+      // 4. Rescue all-zero offsets by stacking steps backward from serving time
+      const maxAfterCheck = items.reduce((m, x) => Math.max(m, x.offset), 0);
+      if (maxAfterCheck === 0 && items.some((x) => x.duration > 0)) {
+        let cursor = 0;
+        for (let i = items.length - 1; i >= 0; i--) {
+          const stepDur = items[i].duration || (isLikelyServeStep(items[i].raw) ? 0 : 10);
+          if (isLikelyServeStep(items[i].raw) && i === items.length - 1) {
+            items[i].offset = 0;
+          } else {
+            cursor += stepDur;
+            items[i].offset = cursor;
+          }
+        }
+        autoAdjusted = true;
+      }
+
+      // 5. Enforce finish-by-serve-time invariant (shift cooking timeline earlier if any non-serve step finishes after serve time)
+      const maxOverrun = items.reduce((max, x) => {
+        if (isLikelyServeStep(x.raw) || x.duration <= 0) return max;
+        return Math.max(max, x.duration - x.offset);
+      }, 0);
+
+      if (maxOverrun > 0) {
+        items.forEach((x) => {
+          if (!(isLikelyServeStep(x.raw) && x.offset === 0)) {
+            x.offset += maxOverrun;
+          }
+        });
+        autoAdjusted = true;
+      }
+
+      return { items, autoAdjusted };
+    }
+
+    /** Normalize a parsed plan object, sanitize timings, generate all cooking timers, persist to cookies, and open the Schedule tab. */
+    function applyGeneratedPlan(rawPlan, toastSuffix = "") {
+      if (!rawPlan || typeof rawPlan !== "object") {
+        throw new Error("The schedule data is not a valid JSON object.");
+      }
+
+      const rawSteps = Array.isArray(rawPlan.timelineSteps) ? rawPlan.timelineSteps : [];
+      if (rawSteps.length === 0) {
+        throw new Error('The JSON is missing a non-empty "timelineSteps" array.');
+      }
+
+      // Sanitize step timings BEFORE sorting (preserves original AI sequence to catch forward-counted schedules)
+      const { items: sanitizedItems, autoAdjusted } = sanitizeStepTimings(rawSteps, state.config.serveTime);
+
+      const normalizedSteps = sanitizedItems
+        .map(({ raw: s, offset, duration }, idx) => ({
+          id: s.id || `step-${idx + 1}`,
+          offsetMinutesBeforeServe: Math.max(0, Math.round(offset)),
+          phase: s.phase || "Cooking",
+          dish: s.dish || "Dish",
+          title: s.title || "Cooking step",
+          instructions: s.instructions || "",
+          durationMinutes: duration,
+          needsTimer: (Boolean(s.needsTimer) || duration >= 5) && duration > 0,
+          timerLabel: s.timerLabel || s.title || s.dish,
+          station: normalizeStationId(s.station),
+          temperature: s.temperature || "",
+          tips: s.tips || ""
+        }))
+        .sort((a, b) => b.offsetMinutesBeforeServe - a.offsetMinutesBeforeServe);
+
+      const makeAhead = (Array.isArray(rawPlan.makeAheadItems) ? rawPlan.makeAheadItems : []).map((m, idx) => ({
+        id: m.id || `ma-${idx + 1}`,
+        dish: m.dish || "Prep Item",
+        whenToMake: m.whenToMake || "Ahead of time",
+        durationMinutes: Math.max(0, parseInt(m.durationMinutes, 10) || 0),
+        station: normalizeStationId(m.station),
+        instructions: m.instructions || "",
+        storageAndReheat: m.storageAndReheat || ""
+      }));
+
+      state.plan = {
+        mealSummary: rawPlan.mealSummary || "Synchronized kitchen schedule ready.",
+        ovenStrategy: rawPlan.ovenStrategy || "Oven steps are staged for conflict-free cooking.",
+        makeAheadItems: makeAhead,
+        timelineSteps: normalizedSteps,
+        generatedAt: new Date().toISOString()
+      };
+      state.completedSteps = {};
+
+      const existingCustomTimers = state.timers.filter((t) => t.isCustom);
+      const generatedTimers = [];
+
+      makeAhead.forEach((m) => {
+        if (m.durationMinutes > 0) {
+          generatedTimers.push({
+            id: `tmr-${m.id}`,
+            stepId: m.id,
+            label: `${m.dish} (Make-Ahead)`,
+            dish: m.dish,
+            station: m.station,
+            temperature: "",
+            totalSeconds: m.durationMinutes * 60,
+            remainingSeconds: m.durationMinutes * 60,
+            status: "idle",
+            endTimestamp: null,
+            isCustom: false,
+            isMakeAhead: true
+          });
+        }
+      });
+
+      normalizedSteps.forEach((s) => {
+        if (s.needsTimer && s.durationMinutes > 0) {
+          generatedTimers.push({
+            id: `tmr-${s.id}`,
+            stepId: s.id,
+            label: s.timerLabel,
+            dish: s.dish,
+            station: s.station,
+            temperature: s.temperature,
+            offsetMinutesBeforeServe: s.offsetMinutesBeforeServe,
+            totalSeconds: s.durationMinutes * 60,
+            remainingSeconds: s.durationMinutes * 60,
+            status: "idle",
+            endTimestamp: null,
+            isCustom: false,
+            isMakeAhead: false
+          });
+        }
+      });
+
+      state.timers = [...generatedTimers, ...existingCustomTimers];
+
+      persistPlan();
+      persistTimers();
+      renderStationFilters();
+      renderPlan();
+      renderTimers();
+      switchTab("plan");
+      const timingNote = autoAdjusted ? " • Auto-aligned step times to finish by serve time" : "";
+      showToast(`Schedule created with ${generatedTimers.length} cooking timers!${toastSuffix}${timingNote}`, "success");
+    }
           }
 
           const rawText = result?.choices?.[0]?.message?.content;
@@ -3323,14 +3589,19 @@ Produce a complete, conflict-free make-ahead guide and chronological cooking tim
       listEl.innerHTML = filtered.map((step) => {
         const st = getStationMeta(step.station);
         const isDone = Boolean(state.completedSteps[step.id]);
-        const clockTime = formatClockTime(serveMins - step.offsetMinutesBeforeServe);
+        const startMins = serveMins - step.offsetMinutesBeforeServe;
+        const clockTime = formatClockTime(startMins);
+        const endClockTime = step.durationMinutes > 0 ? formatClockTime(startMins + step.durationMinutes) : "";
         const linkedTimer = state.timers.find((t) => t.stepId === step.id);
 
         return `
           <div class="rounded-2xl border p-4 transition-all ${isDone ? "bg-stone-50 border-stone-200 opacity-70" : "bg-white border-stone-200 hover:border-stone-300 shadow-sm"}">
             <div class="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4">
               <div class="flex sm:flex-col items-center sm:items-start justify-between sm:w-28 shrink-0 gap-1">
-                <div class="font-mono font-bold text-base text-terracotta-700">${clockTime}</div>
+                <div>
+                  <div class="font-mono font-bold text-base text-terracotta-700">${clockTime}</div>
+                  ${endClockTime ? `<div class="font-mono text-[11px] font-medium text-stone-500">Done ${endClockTime}</div>` : ""}
+                </div>
                 <div class="text-[11px] font-semibold text-stone-500 bg-parchment px-2 py-0.5 rounded-md">${formatOffsetLabel(step.offsetMinutesBeforeServe)}</div>
               </div>
 
@@ -4112,7 +4383,9 @@ Produce a complete, conflict-free make-ahead guide and chronological cooking tim
             <div class="divide-y divide-stone-300 border-t border-b border-stone-300">
               ${state.plan.timelineSteps.map((step) => {
                 const st = getStationMeta(step.station);
-                const clockTime = formatClockTime(serveMins - step.offsetMinutesBeforeServe);
+                const startMins = serveMins - step.offsetMinutesBeforeServe;
+                const clockTime = formatClockTime(startMins);
+                const endClockTime = step.durationMinutes > 0 ? formatClockTime(startMins + step.durationMinutes) : "";
                 const isChecked = !opts.blankCheckboxes && Boolean(state.completedSteps[step.id]);
                 return `
                   <div class="py-2.5 flex items-start gap-3 break-inside-avoid">
@@ -4123,6 +4396,7 @@ Produce a complete, conflict-free make-ahead guide and chronological cooking tim
                     </div>
                     <div class="w-24 shrink-0">
                       <div class="font-mono font-extrabold text-sm text-black">${clockTime}</div>
+                      ${endClockTime ? `<div class="font-mono text-[10px] font-semibold text-stone-700">Done ${endClockTime}</div>` : ""}
                       <div class="font-mono text-[10px] text-stone-600">${formatOffsetLabel(step.offsetMinutesBeforeServe)}</div>
                     </div>
                     <div class="flex-1 space-y-0.5 min-w-0">
