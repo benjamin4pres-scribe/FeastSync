@@ -720,6 +720,22 @@
           <p id="model-fetch-status" class="mt-1.5 text-[11px] text-stone-500 leading-relaxed">
             Enter your API key to automatically pull live models from your account.
           </p>
+
+          <!-- Free-Tier Filter & High-Demand Auto-Fallback Toggles -->
+          <div class="mt-3 space-y-2 rounded-xl bg-parchment/60 border border-stone-200/80 p-3">
+            <label id="gemini-free-tier-toggle-wrap" class="flex items-start gap-2.5 cursor-pointer">
+              <input id="chk-free-tier-only" type="checkbox" checked onchange="handleFreeTierToggle()" class="mt-0.5 h-4 w-4 rounded border-stone-300 accent-terracotta-600 shrink-0">
+              <span class="text-xs text-stone-700 leading-snug">
+                <strong class="text-charcoal">Free-tier models only</strong> (Flash-Lite &amp; Flash). Uncheck only if you enabled Google Cloud billing for Pro / Gemini 4 models.
+              </span>
+            </label>
+            <label id="gemini-auto-fallback-wrap" class="flex items-start gap-2.5 cursor-pointer">
+              <input id="chk-auto-fallback" type="checkbox" checked onchange="handleAutoFallbackToggle()" class="mt-0.5 h-4 w-4 rounded border-stone-300 accent-terracotta-600 shrink-0">
+              <span class="text-xs text-stone-700 leading-snug">
+                <strong class="text-charcoal">Auto-switch model on high demand</strong> &mdash; automatically retries other free-tier models if one is temporarily busy.
+              </span>
+            </label>
+          </div>
         </div>
 
         <!-- Step-by-Step Guide: How to Get a Free Google Gemini API Key -->
@@ -951,15 +967,17 @@
     // Fallback model lists shown before the user's API key fetches live models.
     const FALLBACK_MODELS = {
       gemini: [
-        { id: "gemini-2.5-flash-lite", displayName: "Gemini 2.5 Flash-Lite", isLite: true },
-        { id: "gemini-3-flash-preview", displayName: "Gemini 3 Flash Preview", isLite: true },
-        { id: "gemini-2.5-flash", displayName: "Gemini 2.5 Flash", isLite: false }
+        { id: "gemini-3.5-flash-lite", displayName: "Gemini 3.5 Flash-Lite", isLite: true, isFreeTier: true },
+        { id: "gemini-3.1-flash-lite", displayName: "Gemini 3.1 Flash-Lite", isLite: true, isFreeTier: true },
+        { id: "gemini-2.5-flash-lite", displayName: "Gemini 2.5 Flash-Lite", isLite: true, isFreeTier: true },
+        { id: "gemini-3.8-flash", displayName: "Gemini 3.8 Flash", isLite: false, isFreeTier: true },
+        { id: "gemini-3.6-flash", displayName: "Gemini 3.6 Flash", isLite: false, isFreeTier: true }
       ],
       openai: [
-        { id: "gpt-4.1-nano", displayName: "gpt-4.1-nano", isLite: true },
-        { id: "gpt-4o-mini", displayName: "gpt-4o-mini", isLite: true },
-        { id: "gpt-4.1-mini", displayName: "gpt-4.1-mini", isLite: true },
-        { id: "gpt-4o", displayName: "gpt-4o", isLite: false }
+        { id: "gpt-4.1-nano", displayName: "gpt-4.1-nano", isLite: true, isFreeTier: false },
+        { id: "gpt-4o-mini", displayName: "gpt-4o-mini", isLite: true, isFreeTier: false },
+        { id: "gpt-4.1-mini", displayName: "gpt-4.1-mini", isLite: true, isFreeTier: false },
+        { id: "gpt-4o", displayName: "gpt-4o", isLite: false, isFreeTier: false }
       ]
     };
 
@@ -977,10 +995,12 @@
         mealName: "Thanksgiving Dinner",
         serveTime: "17:00",
         provider: "gemini", // 'gemini' | 'openai'
-        geminiModel: "gemini-2.5-flash-lite",
+        geminiModel: "gemini-3.5-flash-lite",
         openaiModel: "gpt-4.1-nano",
         geminiApiKey: "",
         openaiApiKey: "",
+        freeTierOnly: true,
+        autoFallback: true,
         soundEnabled: true,
         aiSetupPrompted: false,
         kitchen: { ...DEFAULT_KITCHEN }
@@ -1315,6 +1335,10 @@
       document.getElementById("input-meal-name").value = state.config.mealName || "";
       document.getElementById("input-serve-time").value = state.config.serveTime || "17:00";
       document.getElementById("input-api-key").value = getActiveApiKey();
+      const chkFree = document.getElementById("chk-free-tier-only");
+      if (chkFree) chkFree.checked = state.config.freeTierOnly !== false;
+      const chkFallback = document.getElementById("chk-auto-fallback");
+      if (chkFallback) chkFallback.checked = state.config.autoFallback !== false;
       updateProviderButtonsUI();
       renderModelSelectOptions();
       updateAiStatusIndicator();
@@ -1391,6 +1415,8 @@
       const keyLabel = document.getElementById("label-api-key");
       const geminiGuide = document.getElementById("guide-free-gemini");
       const openaiNote = document.getElementById("guide-openai-note");
+      const freeTierWrap = document.getElementById("gemini-free-tier-toggle-wrap");
+      const fallbackWrap = document.getElementById("gemini-auto-fallback-wrap");
 
       if (isGemini) {
         btnG.className = "p-3 rounded-xl border-2 border-terracotta-500 bg-terracotta-50/70 text-left transition-all";
@@ -1398,30 +1424,31 @@
         keyLabel.textContent = "Gemini API Key";
         if (geminiGuide) geminiGuide.classList.remove("hidden");
         if (openaiNote) openaiNote.classList.add("hidden");
+        if (freeTierWrap) freeTierWrap.classList.remove("hidden");
+        if (fallbackWrap) fallbackWrap.classList.remove("hidden");
       } else {
         btnO.className = "p-3 rounded-xl border-2 border-terracotta-500 bg-terracotta-50/70 text-left transition-all";
         btnG.className = "p-3 rounded-xl border-2 border-stone-200 bg-white hover:border-stone-300 text-left transition-all";
         keyLabel.textContent = "OpenAI API Key";
         if (geminiGuide) geminiGuide.classList.add("hidden");
         if (openaiNote) openaiNote.classList.remove("hidden");
+        if (freeTierWrap) freeTierWrap.classList.add("hidden");
+        if (fallbackWrap) fallbackWrap.classList.add("hidden");
       }
     }
 
-    function updateProviderButtonsUI() {
-      const isGemini = state.config.provider === "gemini";
-      const btnG = document.getElementById("provider-btn-gemini");
-      const btnO = document.getElementById("provider-btn-openai");
-      const keyLabel = document.getElementById("label-api-key");
+    function handleFreeTierToggle() {
+      const chk = document.getElementById("chk-free-tier-only");
+      state.config.freeTierOnly = Boolean(chk && chk.checked);
+      persistConfig();
+      renderModelSelectOptions();
+      updateAiStatusIndicator();
+    }
 
-      if (isGemini) {
-        btnG.className = "p-3 rounded-xl border-2 border-terracotta-500 bg-terracotta-50/70 text-left transition-all";
-        btnO.className = "p-3 rounded-xl border-2 border-stone-200 bg-white hover:border-stone-300 text-left transition-all";
-        keyLabel.textContent = "Gemini API Key";
-      } else {
-        btnO.className = "p-3 rounded-xl border-2 border-terracotta-500 bg-terracotta-50/70 text-left transition-all";
-        btnG.className = "p-3 rounded-xl border-2 border-stone-200 bg-white hover:border-stone-300 text-left transition-all";
-        keyLabel.textContent = "OpenAI API Key";
-      }
+    function handleAutoFallbackToggle() {
+      const chk = document.getElementById("chk-auto-fallback");
+      state.config.autoFallback = Boolean(chk && chk.checked);
+      persistConfig();
     }
 
     function toggleApiKeyVisibility() {
@@ -1500,22 +1527,47 @@
     }
 
     /**
-     * Compute priority score so Lite / Nano / Mini models always appear first,
-     * followed by Flash / standard models, then Pro / larger models.
+     * Identify whether a Gemini model is eligible for Google AI Studio's Free Tier.
+     * Google's /models endpoint returns all catalog models regardless of billing status,
+     * so we exclude paid-only Gemini 4, Pro, Omni, Image, Video, TTS, and agent models.
+     */
+    function isLikelyFreeTierGeminiModel(id) {
+      const lower = String(id).toLowerCase();
+      if (!lower.startsWith("gemini-")) return false;
+      // Paid-only or specialized families
+      if (/(gemini-4|-pro\b|pro-|nano-banana|omni|deep-research|antigravity|decision|customtools|transcribe|translate|tts|audio|image|imagen|veo|lyria|live|robotics|computer-use|embedding|aqa|vision)/.test(lower)) {
+        return false;
+      }
+      // Deprecated 1.x / 2.0 or restricted 2.5-flash (2.5-flash-lite remains active on free tier)
+      if (/^gemini-(1\.|2\.0)/.test(lower)) return false;
+      if (lower === "gemini-2.5-flash" || lower.startsWith("gemini-2.5-flash-preview") || lower.startsWith("gemini-2.5-flash-00")) {
+        return false;
+      }
+      // Free-tier text models are Flash-Lite and Flash
+      return lower.includes("flash");
+    }
+
+    /**
+     * Compute priority score so stable Free-Tier Lite models always appear first,
+     * followed by stable Flash models, then Preview/Exp models, then Paid/Pro models.
      * Lower score = higher priority.
      */
     function scoreModelPriority(provider, id) {
       const lower = String(id).toLowerCase();
       const ver = extractModelVersion(lower);
       const isDated = /-\d{4}-\d{2}-\d{2}|-\d{3}$/.test(lower) ? 1 : 0;
+      const isPreview = lower.includes("preview") ? 1 : 0;
       const isExp = lower.includes("exp") ? 1 : 0;
 
       if (provider === "gemini") {
-        let tier = 3;
-        if (lower.includes("lite")) tier = 0;       // Priority 1: flash-lite / lite
-        else if (lower.includes("flash")) tier = 1; // Priority 2: standard flash
-        else if (lower.includes("pro")) tier = 2;   // Priority 3: pro
-        return tier * 1000 - ver * 10 + isDated * 2 + isExp;
+        const freeEligible = isLikelyFreeTierGeminiModel(lower);
+        let tier = 5;
+        if (freeEligible && lower.includes("lite") && !isPreview && !isExp) tier = 0;      // Priority 1: Stable GA Flash-Lite (best free quota & availability)
+        else if (freeEligible && lower.includes("flash") && !lower.includes("lite") && !isPreview && !isExp) tier = 1; // Priority 2: Stable GA Flash
+        else if (freeEligible && lower.includes("lite")) tier = 2;                          // Priority 3: Preview Flash-Lite
+        else if (freeEligible) tier = 3;                                                    // Priority 4: Preview Flash
+        else if (lower.includes("pro") || lower.startsWith("gemini-4")) tier = 4;           // Priority 5: Paid-tier Pro / Gemini 4
+        return tier * 1000 - ver * 10 + isPreview * 5 + isDated * 2 + isExp * 3;
       } else {
         let tier = 4;
         if (lower.includes("nano") || lower.includes("lite")) tier = 0; // Priority 1: nano / lite
@@ -1526,9 +1578,20 @@
       }
     }
 
+    /** Return the list of models visible in the dropdown (applying Gemini free-tier filter when enabled). */
+    function getFilteredModelsForProvider(provider) {
+      const isLive = runtimeModels[provider].length > 0;
+      const baseList = isLive ? [...runtimeModels[provider]] : [...FALLBACK_MODELS[provider]];
+      if (provider === "gemini" && state.config.freeTierOnly !== false) {
+        const freeOnly = baseList.filter((m) => m.isFreeTier !== false && isLikelyFreeTierGeminiModel(m.id));
+        if (freeOnly.length > 0) return freeOnly;
+      }
+      return baseList;
+    }
+
     /**
      * Fetch live available models from Google Gemini or OpenAI using the user's API key,
-     * filter out non-text models, and sort with Lite models prioritized at the top.
+     * filter out non-text models, and sort with stable Free-Tier Lite models prioritized first.
      */
     async function fetchAvailableModels({ silent = false, autoSelectLite = true } = {}) {
       const provider = state.config.provider;
@@ -1579,7 +1642,8 @@
               if (!methods.includes("generateContent")) return false;
               const id = (m.name || "").replace(/^models\//, "").toLowerCase();
               if (!id.startsWith("gemini-")) return false;
-              if (/(embedding|imagen|veo|tts|audio|image|robotics|computer-use|aqa|vision|live)/.test(id)) return false;
+              if (/(embedding|imagen|veo|lyria|tts|audio|image|robotics|computer-use|aqa|vision|live|nano-banana|omni|transcribe|translate|decision|deep-research|antigravity|customtools)/.test(id)) return false;
+              if (/^gemini-1\./.test(id)) return false;
               return true;
             })
             .map((m) => {
@@ -1587,7 +1651,8 @@
               return {
                 id,
                 displayName: m.displayName || id,
-                isLite: isLiteModel("gemini", id)
+                isLite: isLiteModel("gemini", id),
+                isFreeTier: isLikelyFreeTierGeminiModel(id)
               };
             });
         } else {
@@ -1607,7 +1672,8 @@
             .map((m) => ({
               id: m.id,
               displayName: m.id,
-              isLite: isLiteModel("openai", m.id)
+              isLite: isLiteModel("openai", m.id),
+              isFreeTier: false
             }));
         }
 
@@ -1615,7 +1681,7 @@
           throw new Error("No compatible text generation models were returned for this API key.");
         }
 
-        // Deduplicate & sort with Lite models prioritized at the top
+        // Deduplicate & sort with stable Free-Tier Lite models prioritized at the top
         const seen = new Set();
         models = models
           .filter((m) => {
@@ -1627,11 +1693,12 @@
 
         runtimeModels[provider] = models;
 
+        const visibleModels = getFilteredModelsForProvider(provider);
         const currentSelected = getActiveModel();
-        const existsInLive = models.some((m) => m.id === currentSelected);
+        const existsInVisible = visibleModels.some((m) => m.id === currentSelected);
 
-        if (autoSelectLite || !existsInLive) {
-          const topModel = models[0].id;
+        if (autoSelectLite || !existsInVisible) {
+          const topModel = visibleModels[0].id;
           if (provider === "gemini") {
             state.config.geminiModel = topModel;
           } else {
@@ -1643,23 +1710,77 @@
         renderModelSelectOptions();
         updateAiStatusIndicator();
 
-        const liteCount = models.filter((m) => m.isLite).length;
+        const hiddenPaidCount = provider === "gemini" ? Math.max(0, models.length - visibleModels.length) : 0;
+        const liteCount = visibleModels.filter((m) => m.isLite).length;
         statusEl.className = "mt-1.5 text-[11px] text-sage-700 font-medium leading-relaxed";
-        statusEl.textContent = `Loaded ${models.length} live models (${liteCount} lite prioritized first). Selected: ${getActiveModel()}`;
+        statusEl.textContent = provider === "gemini" && hiddenPaidCount > 0
+          ? `Showing ${visibleModels.length} free-tier models (${liteCount} lite first; ${hiddenPaidCount} paid-only models hidden). Selected: ${getActiveModel()}`
+          : `Loaded ${visibleModels.length} live models (${liteCount} lite prioritized first). Selected: ${getActiveModel()}`;
 
         if (!silent) {
-          showToast(`Loaded ${models.length} models — prioritized ${models[0].id}`, "success");
+          showToast(`Loaded ${visibleModels.length} models — prioritized ${visibleModels[0].id}`, "success");
         }
       } catch (err) {
-        statusEl.className = "mt-1.5 text-[11px] text-red-600 font-medium leading-relaxed";
-        statusEl.textContent = `Could not fetch models: ${err.message || "Check your API key."}`;
-        if (!silent) {
-          showToast(`Model fetch failed: ${err.message}`, "error");
+    /** Render the unified model selector dropdown with Free-Tier & Lite models clearly tagged first. */
+    function renderModelSelectOptions() {
+      const provider = state.config.provider;
+      const select = document.getElementById("select-ai-model");
+      const statusEl = document.getElementById("model-fetch-status");
+      if (!select) return;
+
+      const isLive = runtimeModels[provider].length > 0;
+      const list = getFilteredModelsForProvider(provider);
+      let selectedId = getActiveModel();
+
+      // If free-tier filter is active and the previously saved Gemini model is paid-only, switch to top free-tier model
+      if (provider === "gemini" && state.config.freeTierOnly !== false && !list.some((m) => m.id === selectedId)) {
+        selectedId = list[0].id;
+        state.config.geminiModel = selectedId;
+        persistConfig();
+      } else if (selectedId && !list.some((m) => m.id === selectedId)) {
+        list.unshift({
+          id: selectedId,
+          displayName: selectedId,
+          isLite: isLiteModel(provider, selectedId),
+          isFreeTier: provider === "gemini" ? isLikelyFreeTierGeminiModel(selectedId) : false
+        });
+      }
+
+      select.innerHTML = list.map((m, idx) => {
+        let tag = "";
+        if (provider === "gemini") {
+          if (m.isFreeTier === false) {
+            tag = " [Paid Tier]";
+          } else if (m.isLite) {
+            tag = idx === 0 ? " ★ Free Lite (Recommended)" : " [Free Lite]";
+          } else {
+            tag = " [Free Tier]";
+          }
+        } else if (m.isLite) {
+          tag = idx === 0 ? " ★ Lite (Recommended)" : " [Lite]";
         }
-      } finally {
-        btn.disabled = false;
-        spin.classList.add("hidden");
-        btnLabel.textContent = "Fetch Models";
+        const label = m.displayName && m.displayName !== m.id
+          ? `${m.id} — ${m.displayName}${tag}`
+          : `${m.id}${tag}`;
+        return `<option value="${escapeHtml(m.id)}">${escapeHtml(label)}</option>`;
+      }).join("");
+
+      select.value = selectedId;
+
+      if (statusEl) {
+        if (isLive && provider === "gemini") {
+          const totalLive = runtimeModels.gemini.length;
+          const hiddenPaid = Math.max(0, totalLive - list.length);
+          statusEl.className = "mt-1.5 text-[11px] text-sage-700 font-medium leading-relaxed";
+          statusEl.textContent = hiddenPaid > 0
+            ? `Showing ${list.length} free-tier models (${hiddenPaid} paid-only models hidden). Selected: ${selectedId}`
+            : `Showing all ${list.length} live Gemini models (includes paid-tier models). Selected: ${selectedId}`;
+        } else if (!isLive) {
+          statusEl.className = "mt-1.5 text-[11px] text-stone-500 leading-relaxed";
+          statusEl.textContent = getActiveApiKey()
+            ? `Click "Fetch Models" to load live ${provider === "gemini" ? "Gemini" : "OpenAI"} models (free-tier lite prioritized).`
+            : `Paste your API key to auto-fetch live models. Stored locally in your browser cookie.`;
+        }
       }
     }
 
@@ -1916,7 +2037,9 @@ Produce a complete, conflict-free make-ahead guide and chronological cooking tim
             const errJson = await response.json();
             errMsg = errJson?.error?.message || errMsg;
           } catch (_) {}
-          throw new Error(errMsg);
+          const apiErr = new Error(errMsg);
+          apiErr.status = response.status;
+          throw apiErr;
         } catch (err) {
           if (attempt < maxRetries && err.name === "TypeError") {
             const delayMs = Math.pow(2, attempt) * 1000;
@@ -1924,6 +2047,166 @@ Produce a complete, conflict-free make-ahead guide and chronological cooking tim
             attempt++;
             continue;
           }
+          throw err;
+        }
+      }
+      throw new Error("Request failed after retries.");
+    }
+
+    /** Check whether a Gemini error is caused by temporary high demand, quota, or model access limits. */
+    function isRetryableGeminiModelError(err) {
+      const msg = String(err?.message || "").toLowerCase();
+      // Never fallback across models if the API key itself is invalid
+      if (/(api key not valid|api_key_invalid|invalid api key|unauthenticated)/.test(msg)) {
+        return false;
+      }
+      if (err?.status === 503 || err?.status === 429 || err?.status === 404 || err?.status === 403) {
+        return true;
+      }
+      return /(high demand|overloaded|unavailable|resource_exhausted|quota|rate limit|not found|not supported|billing|free tier)/.test(msg);
+    }
+
+    /** Build an ordered list of Gemini models to attempt (selected model first, then free-tier backups). */
+    function buildGeminiCandidateModels() {
+      const primary = getActiveModel();
+      if (state.config.autoFallback === false) {
+        return [primary];
+      }
+      const candidates = [primary];
+      const pool = [
+        ...getFilteredModelsForProvider("gemini"),
+        ...FALLBACK_MODELS.gemini
+      ];
+      for (const m of pool) {
+        if (!m || !m.id || candidates.includes(m.id)) continue;
+        // Only auto-fallback to free-tier eligible models when free-tier mode is on
+        if (state.config.freeTierOnly !== false && !isLikelyFreeTierGeminiModel(m.id)) continue;
+        candidates.push(m.id);
+        if (candidates.length >= 5) break;
+      }
+      return candidates;
+    }
+
+    /** Call Google Gemini API with automatic fallback to sibling free-tier models if one has high demand. */
+    async function callGeminiAPI() {
+      const apiKey = getActiveApiKey();
+      const stationEnum = Object.keys(getStationsMap());
+      const candidates = buildGeminiCandidateModels();
+      const primaryModel = candidates[0];
+      const labelEl = document.getElementById("btn-generate-label");
+
+      const payload = {
+        systemInstruction: {
+          parts: [{ text: buildSystemPrompt() }]
+        },
+        contents: [
+          {
+            role: "user",
+            parts: [{ text: buildUserPrompt() }]
+          }
+        ],
+        generationConfig: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: "OBJECT",
+            properties: {
+              mealSummary: { type: "STRING" },
+              ovenStrategy: { type: "STRING" },
+              makeAheadItems: {
+                type: "ARRAY",
+                items: {
+                  type: "OBJECT",
+                  properties: {
+                    id: { type: "STRING" },
+                    dish: { type: "STRING" },
+                    whenToMake: { type: "STRING" },
+                    durationMinutes: { type: "INTEGER" },
+                    station: {
+                      type: "STRING",
+                      enum: stationEnum
+                    },
+                    instructions: { type: "STRING" },
+                    storageAndReheat: { type: "STRING" }
+                  },
+                  required: ["id", "dish", "whenToMake", "durationMinutes", "station", "instructions", "storageAndReheat"]
+                }
+              },
+              timelineSteps: {
+                type: "ARRAY",
+                items: {
+                  type: "OBJECT",
+                  properties: {
+                    id: { type: "STRING" },
+                    offsetMinutesBeforeServe: { type: "INTEGER" },
+                    phase: { type: "STRING" },
+                    dish: { type: "STRING" },
+                    title: { type: "STRING" },
+                    instructions: { type: "STRING" },
+                    durationMinutes: { type: "INTEGER" },
+                    needsTimer: { type: "BOOLEAN" },
+                    timerLabel: { type: "STRING" },
+                    station: {
+                      type: "STRING",
+                      enum: stationEnum
+                    },
+                    temperature: { type: "STRING" },
+                    tips: { type: "STRING" }
+                  },
+                  required: ["id", "offsetMinutesBeforeServe", "phase", "dish", "title", "instructions", "durationMinutes", "needsTimer", "station"]
+                }
+              }
+            },
+            required: ["mealSummary", "ovenStrategy", "makeAheadItems", "timelineSteps"]
+          }
+        }
+      };
+
+      let lastErr = null;
+      const attempted = [];
+
+      for (let i = 0; i < candidates.length; i++) {
+        const modelId = candidates[i];
+        attempted.push(modelId);
+        if (i > 0 && labelEl) {
+          labelEl.textContent = `Busy — trying ${modelId}...`;
+        }
+
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelId)}:generateContent?key=${encodeURIComponent(apiKey)}`;
+        // Use fewer per-model retries when fallback models are queued so recovery is fast
+        const retriesForThisModel = candidates.length > 1 ? 1 : 3;
+
+        try {
+          const result = await fetchWithBackoff(apiUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          }, retriesForThisModel);
+
+          const rawText = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (!rawText) {
+            throw new Error(`Gemini (${modelId}) returned an empty response.`);
+          }
+
+          return {
+            data: JSON.parse(rawText),
+            modelUsed: modelId,
+            fellBackFrom: i > 0 ? primaryModel : null
+          };
+        } catch (err) {
+          lastErr = err;
+          const canTryNext = i < candidates.length - 1 && isRetryableGeminiModelError(err);
+          if (!canTryNext) {
+            break;
+          }
+          console.warn(`Gemini model ${modelId} unavailable (${err.message}); falling back to ${candidates[i + 1]}`);
+        }
+      }
+
+      if (attempted.length > 1) {
+        throw new Error(`Google's free-tier servers are currently experiencing high demand across ${attempted.join(", ")}. Please wait 30 seconds and try again, or switch models in the top-right gear menu. (Last error: ${lastErr?.message || "Overloaded"})`);
+      }
+      throw lastErr || new Error("Unable to generate schedule with Gemini.");
+    }
           throw err;
         }
       }
@@ -2110,9 +2393,18 @@ Output strictly a single JSON object with this exact shape:
       setGeneratingUI(true);
 
       try {
-        const rawPlan = state.config.provider === "gemini"
-          ? await callGeminiAPI()
-          : await callOpenAIAPI();
+        let rawPlan;
+        let fallbackNotice = "";
+
+        if (state.config.provider === "gemini") {
+          const geminiRes = await callGeminiAPI();
+          rawPlan = geminiRes.data;
+          if (geminiRes.fellBackFrom) {
+            fallbackNotice = ` (auto-switched to ${geminiRes.modelUsed} because ${geminiRes.fellBackFrom} was busy)`;
+          }
+        } else {
+          rawPlan = await callOpenAIAPI();
+        }
 
         const steps = Array.isArray(rawPlan.timelineSteps) ? rawPlan.timelineSteps : [];
         steps.sort((a, b) => (b.offsetMinutesBeforeServe || 0) - (a.offsetMinutesBeforeServe || 0));
@@ -2201,7 +2493,7 @@ Output strictly a single JSON object with this exact shape:
         renderPlan();
         renderTimers();
         switchTab("plan");
-        showToast(`Schedule created with ${generatedTimers.length} cooking timers!`, "success");
+        showToast(`Schedule created with ${generatedTimers.length} cooking timers!${fallbackNotice}`, "success");
       } catch (err) {
         console.error("Schedule generation failed:", err);
         const keyHint = !getActiveApiKey() ? " Click the gear icon in the top right to enter your API key." : "";
@@ -3041,6 +3333,8 @@ Output strictly a single JSON object with this exact shape:
       state.config.openaiApiKey = "";
       state.config.geminiModel = FALLBACK_MODELS.gemini[0].id;
       state.config.openaiModel = FALLBACK_MODELS.openai[0].id;
+      state.config.freeTierOnly = true;
+      state.config.autoFallback = true;
       state.config.mealName = "Thanksgiving Dinner";
       state.config.serveTime = "17:00";
       state.config.aiSetupPrompted = false;
