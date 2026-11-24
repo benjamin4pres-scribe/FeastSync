@@ -49,12 +49,12 @@
     }
   </script>
 </head>
-<body class="bg-cream text-charcoal font-sans antialiased min-h-screen flex flex-col selection:bg-terracotta-200 selection:text-charcoal overflow-x-hidden">
+<body class="bg-cream text-charcoal font-sans antialiased min-h-screen flex flex-col selection:bg-terracotta-200 selection:text-charcoal overflow-x-hidden print:bg-white print:text-black">
 
   <!-- ===================================================================== -->
   <!-- TOP NAVIGATION BAR & KITCHEN STATUS HEADER                            -->
   <!-- ===================================================================== -->
-  <header class="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-stone-200/80 shadow-sm">
+  <header class="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-stone-200/80 shadow-sm print:hidden">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
       <!-- Brand Identity -->
       <div class="flex items-center gap-3">
@@ -87,6 +87,11 @@
 
       <!-- Utility Controls (Sound & Cookie Status) -->
       <div class="hidden md:flex items-center gap-2">
+        <button type="button" onclick="openPrintModal()" class="p-2.5 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-600 transition-colors" title="Print timeline & instructions" aria-label="Print timeline and instructions">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+          </svg>
+        </button>
         <button id="btn-sound-toggle" type="button" onclick="toggleSound()" class="p-2.5 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-600 transition-colors" title="Toggle timer alarm chime">
           <svg id="icon-sound-on" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/>
@@ -106,7 +111,7 @@
   <!-- ===================================================================== -->
   <!-- ALARM RINGING BANNER (Shown when any timer reaches 00:00)             -->
   <!-- ===================================================================== -->
-  <div id="alarm-banner" class="hidden sticky top-[65px] z-20 bg-terracotta-600 text-white shadow-lg border-b border-terracotta-700">
+  <div id="alarm-banner" class="hidden sticky top-[65px] z-20 bg-terracotta-600 text-white shadow-lg border-b border-terracotta-700 print:hidden">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
       <div class="flex items-center gap-3">
         <span class="inline-flex h-8 w-8 rounded-full bg-white/20 items-center justify-center animate-bounce">
@@ -133,7 +138,7 @@
   <!-- ===================================================================== -->
   <!-- MAIN CONTENT CONTAINER                                                -->
   <!-- ===================================================================== -->
-  <main class="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 pb-28">
+  <main class="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 pb-28 print:hidden">
 
     <!-- =================================================================== -->
     <!-- TAB 1: RECIPES, MEAL DETAILS & AI CONFIGURATION                     -->
@@ -382,6 +387,12 @@
                 <div class="text-[11px] uppercase tracking-wider text-stone-300">Progress</div>
                 <div id="plan-progress-text" class="text-base font-mono font-bold text-sage-100">0/0</div>
               </div>
+              <button type="button" onclick="openPrintModal()" class="px-4 py-2.5 rounded-xl bg-terracotta-500 hover:bg-terracotta-600 text-white text-xs sm:text-sm font-bold shadow-sm transition-colors flex items-center gap-2">
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+                </svg>
+                <span>Print Sheet</span>
+              </button>
             </div>
           </div>
 
@@ -417,9 +428,17 @@
               <p class="text-xs sm:text-sm text-stone-500">Check off completed tasks or launch any step's countdown timer when you're ready.</p>
             </div>
             <!-- Live Serve Time Adjuster -->
-            <div class="flex items-center gap-2 bg-cream px-3 py-1.5 rounded-xl border border-stone-200">
-              <label for="plan-quick-serve-time" class="text-xs font-semibold text-stone-600">Shift Serve Time:</label>
-              <input id="plan-quick-serve-time" type="time" onchange="syncServeTimeFromPlan(this.value)" class="bg-transparent text-xs font-mono font-bold text-terracotta-700 focus:outline-none">
+            <div class="flex flex-wrap items-center gap-2">
+              <div class="flex items-center gap-2 bg-cream px-3 py-1.5 rounded-xl border border-stone-200">
+                <label for="plan-quick-serve-time" class="text-xs font-semibold text-stone-600">Shift Serve Time:</label>
+                <input id="plan-quick-serve-time" type="time" onchange="syncServeTimeFromPlan(this.value)" class="bg-transparent text-xs font-mono font-bold text-terracotta-700 focus:outline-none">
+              </div>
+              <button type="button" onclick="openPrintModal()" class="px-3 py-1.5 rounded-xl border border-stone-300 bg-white hover:bg-stone-50 text-xs font-semibold text-charcoal flex items-center gap-1.5 transition-colors">
+                <svg class="w-3.5 h-3.5 text-stone-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+                </svg>
+                Print
+              </button>
             </div>
           </div>
 
@@ -488,7 +507,7 @@
   <!-- ===================================================================== -->
   <!-- STICKY BOTTOM ACTIVE TIMERS DOCK (Visible across all tabs)            -->
   <!-- ===================================================================== -->
-  <div id="active-timers-dock" class="hidden fixed bottom-0 inset-x-0 z-30 bg-charcoal/95 backdrop-blur text-white border-t border-stone-700 shadow-2xl">
+  <div id="active-timers-dock" class="hidden fixed bottom-0 inset-x-0 z-30 bg-charcoal/95 backdrop-blur text-white border-t border-stone-700 shadow-2xl print:hidden">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 py-2.5 flex items-center justify-between gap-3">
       <div class="flex items-center gap-2.5 overflow-x-auto py-1 flex-1" id="dock-timers-list"></div>
       <button type="button" onclick="switchTab('timers')" class="px-3.5 py-2 rounded-xl bg-terracotta-600 hover:bg-terracotta-500 text-xs font-bold shrink-0 transition-colors">
@@ -500,7 +519,7 @@
   <!-- ===================================================================== -->
   <!-- MODAL 1: ADD / EDIT RECIPE                                            -->
   <!-- ===================================================================== -->
-  <div id="modal-recipe" class="hidden fixed inset-0 z-50 bg-charcoal/60 backdrop-blur-sm flex items-center justify-center p-4">
+  <div id="modal-recipe" class="hidden fixed inset-0 z-50 bg-charcoal/60 backdrop-blur-sm flex items-center justify-center p-4 print:hidden">
     <div class="bg-white rounded-2xl shadow-2xl border border-stone-200 w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
       <div class="px-6 py-4 border-b border-stone-200 flex items-center justify-between">
         <h3 id="modal-recipe-title" class="text-lg font-bold text-charcoal">Add Recipe</h3>
@@ -535,7 +554,7 @@
   <!-- ===================================================================== -->
   <!-- MODAL 2: ADD CUSTOM TIMER                                             -->
   <!-- ===================================================================== -->
-  <div id="modal-custom-timer" class="hidden fixed inset-0 z-50 bg-charcoal/60 backdrop-blur-sm flex items-center justify-center p-4">
+  <div id="modal-custom-timer" class="hidden fixed inset-0 z-50 bg-charcoal/60 backdrop-blur-sm flex items-center justify-center p-4 print:hidden">
     <div class="bg-white rounded-2xl shadow-2xl border border-stone-200 w-full max-w-md overflow-hidden">
       <div class="px-6 py-4 border-b border-stone-200 flex items-center justify-between">
         <h3 class="text-lg font-bold text-charcoal">Add Custom Timer</h3>
@@ -575,7 +594,7 @@
   <!-- ===================================================================== -->
   <!-- MODAL 3: COOKIE STORAGE & BACKUP MANAGER                              -->
   <!-- ===================================================================== -->
-  <div id="modal-storage" class="hidden fixed inset-0 z-50 bg-charcoal/60 backdrop-blur-sm flex items-center justify-center p-4">
+  <div id="modal-storage" class="hidden fixed inset-0 z-50 bg-charcoal/60 backdrop-blur-sm flex items-center justify-center p-4 print:hidden">
     <div class="bg-white rounded-2xl shadow-2xl border border-stone-200 w-full max-w-lg overflow-hidden">
       <div class="px-6 py-4 border-b border-stone-200 flex items-center justify-between">
         <h3 class="text-lg font-bold text-charcoal">Site Cookie Storage</h3>
@@ -613,9 +632,77 @@
   </div>
 
   <!-- ===================================================================== -->
+  <!-- MODAL 4: PRINT KITCHEN RUN SHEET OPTIONS                              -->
+  <!-- ===================================================================== -->
+  <div id="modal-print" class="hidden fixed inset-0 z-50 bg-charcoal/60 backdrop-blur-sm flex items-center justify-center p-4 print:hidden">
+    <div class="bg-white rounded-2xl shadow-2xl border border-stone-200 w-full max-w-md overflow-hidden">
+      <div class="px-6 py-4 border-b border-stone-200 flex items-center justify-between">
+        <div>
+          <h3 class="text-lg font-bold text-charcoal">Print Kitchen Sheet</h3>
+          <p class="text-xs text-stone-500">Formatted for clean, ink-friendly paper printing.</p>
+        </div>
+        <button type="button" onclick="closePrintModal()" class="p-2 rounded-lg text-stone-400 hover:text-charcoal hover:bg-stone-100">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      <div class="p-6 space-y-4">
+        <div id="print-modal-summary" class="rounded-xl bg-parchment/70 border border-stone-200 px-3.5 py-2.5 text-xs font-medium text-stone-700"></div>
+
+        <div class="space-y-2.5">
+          <label class="flex items-start gap-3 p-3 rounded-xl border border-stone-200 hover:bg-cream/50 cursor-pointer">
+            <input id="print-opt-makeahead" type="checkbox" checked class="mt-0.5 h-4 w-4 rounded border-stone-300 accent-terracotta-600">
+            <div class="text-xs">
+              <div class="font-bold text-charcoal">Make-Ahead &amp; Set Aside Guide</div>
+              <div class="text-stone-500">Early prep items with storage &amp; reheating instructions.</div>
+            </div>
+          </label>
+
+          <label class="flex items-start gap-3 p-3 rounded-xl border border-stone-200 hover:bg-cream/50 cursor-pointer">
+            <input id="print-opt-timeline" type="checkbox" checked class="mt-0.5 h-4 w-4 rounded border-stone-300 accent-terracotta-600">
+            <div class="text-xs">
+              <div class="font-bold text-charcoal">Synchronized Cooking Timeline</div>
+              <div class="text-stone-500">Chronological steps with clock times, stations, temps, timers &amp; instructions.</div>
+            </div>
+          </label>
+
+          <label class="flex items-start gap-3 p-3 rounded-xl border border-stone-200 hover:bg-cream/50 cursor-pointer">
+            <input id="print-opt-recipes" type="checkbox" checked class="mt-0.5 h-4 w-4 rounded border-stone-300 accent-terracotta-600">
+            <div class="text-xs">
+              <div class="font-bold text-charcoal">Recipe Ingredients &amp; Reference Sheet</div>
+              <div class="text-stone-500">Appends all dish ingredients and full recipe instructions on a clean page.</div>
+            </div>
+          </label>
+
+          <label class="flex items-center gap-3 px-3 py-2 rounded-xl bg-stone-50 border border-stone-200/80 cursor-pointer">
+            <input id="print-opt-blank-checks" type="checkbox" checked class="h-4 w-4 rounded border-stone-300 accent-terracotta-600">
+            <span class="text-xs font-medium text-stone-600">Print empty checkboxes (for checking off on paper)</span>
+          </label>
+        </div>
+
+        <div class="pt-2 flex items-center justify-end gap-2.5">
+          <button type="button" onclick="closePrintModal()" class="px-4 py-2.5 rounded-xl border border-stone-300 bg-white hover:bg-stone-50 text-sm font-semibold text-stone-700">Cancel</button>
+          <button type="button" onclick="executePrint()" class="px-5 py-2.5 rounded-xl bg-terracotta-600 hover:bg-terracotta-700 text-white text-sm font-bold shadow-sm flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+            </svg>
+            Print Now
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
   <!-- TOAST NOTIFICATION CONTAINER (Replaces browser alert())               -->
   <!-- ===================================================================== -->
-  <div id="toast-container" class="fixed top-20 right-4 z-50 flex flex-col gap-2 max-w-sm pointer-events-none"></div>
+  <div id="toast-container" class="fixed top-20 right-4 z-50 flex flex-col gap-2 max-w-sm pointer-events-none print:hidden"></div>
+
+  <!-- ===================================================================== -->
+  <!-- DEDICATED PRINT-ONLY KITCHEN RUN SHEET                                -->
+  <!-- ===================================================================== -->
+  <section id="print-sheet" class="hidden print:block bg-white text-black w-full text-sm leading-snug"></section>
 
   <!-- ===================================================================== -->
   <!-- APPLICATION JAVASCRIPT                                                -->
@@ -2880,6 +2967,235 @@ Output strictly a single JSON object with this exact shape:
         showToast("Unable to copy backup automatically.", "error");
       }
     }
+
+    /**
+     * =========================================================================
+     * 12. PRINTABLE KITCHEN RUN SHEET (TIMELINE, MAKE-AHEAD & INSTRUCTIONS)
+     * =========================================================================
+     */
+    function openPrintModal() {
+      const hasPlan = Boolean(state.plan && Array.isArray(state.plan.timelineSteps) && state.plan.timelineSteps.length > 0);
+      const hasMakeAhead = Boolean(state.plan && Array.isArray(state.plan.makeAheadItems) && state.plan.makeAheadItems.length > 0);
+      const hasRecipes = state.recipes.length > 0;
+
+      if (!hasPlan && !hasRecipes) {
+        showToast("Add recipes or generate a schedule first before printing.", "error");
+        return;
+      }
+
+      const chkMakeAhead = document.getElementById("print-opt-makeahead");
+      const chkTimeline = document.getElementById("print-opt-timeline");
+      const chkRecipes = document.getElementById("print-opt-recipes");
+      const summaryEl = document.getElementById("print-modal-summary");
+
+      chkMakeAhead.disabled = !hasMakeAhead;
+      chkMakeAhead.checked = hasMakeAhead;
+
+      chkTimeline.disabled = !hasPlan;
+      chkTimeline.checked = hasPlan;
+
+      chkRecipes.disabled = !hasRecipes;
+      chkRecipes.checked = hasRecipes;
+
+      const summaryParts = [];
+      if (hasMakeAhead) summaryParts.push(`${state.plan.makeAheadItems.length} make-ahead items`);
+      if (hasPlan) summaryParts.push(`${state.plan.timelineSteps.length} timeline steps`);
+      if (hasRecipes) summaryParts.push(`${state.recipes.length} recipes`);
+
+      const serveClock = formatClockTime(parseServeTimeMinutes(state.config.serveTime));
+      summaryEl.innerHTML = `<strong>${escapeHtml(state.config.mealName || "Big Meal")}</strong> &bull; Serve at ${serveClock}<br><span class="text-stone-500">${summaryParts.join(" • ")}</span>`;
+
+      document.getElementById("modal-print").classList.remove("hidden");
+    }
+
+    function closePrintModal() {
+      document.getElementById("modal-print").classList.add("hidden");
+    }
+
+    /** Populate the dedicated ink-friendly print container with selected sections. */
+    function renderPrintSheet(options = null) {
+      const container = document.getElementById("print-sheet");
+      if (!container) return;
+
+      const hasPlan = Boolean(state.plan && Array.isArray(state.plan.timelineSteps) && state.plan.timelineSteps.length > 0);
+      const hasMakeAhead = Boolean(state.plan && Array.isArray(state.plan.makeAheadItems) && state.plan.makeAheadItems.length > 0);
+      const hasRecipes = state.recipes.length > 0;
+
+      const opts = options || {
+        includeMakeAhead: hasMakeAhead,
+        includeTimeline: hasPlan,
+        includeRecipes: hasRecipes,
+        blankCheckboxes: true
+      };
+
+      const serveMins = parseServeTimeMinutes(state.config.serveTime);
+      const maxOffset = hasPlan
+        ? state.plan.timelineSteps.reduce((max, s) => Math.max(max, s.offsetMinutesBeforeServe || 0), 0)
+        : 0;
+      const startClock = hasPlan ? formatClockTime(serveMins - maxOffset) : "--:--";
+      const printedDate = new Date().toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric", year: "numeric" });
+
+      let html = `
+        <div class="border-b-2 border-stone-900 pb-3 mb-4 flex items-end justify-between gap-4">
+          <div>
+            <div class="text-[10px] font-bold uppercase tracking-widest text-stone-500">FeastSync Kitchen Run Sheet</div>
+            <h1 class="text-2xl font-extrabold text-black leading-tight mt-0.5">${escapeHtml(state.config.mealName || "Big Meal")}</h1>
+            <p class="text-xs text-stone-600 mt-1">${escapeHtml(formatKitchenSummaryText())}</p>
+          </div>
+          <div class="text-right text-xs space-y-0.5 shrink-0">
+            <div><span class="font-semibold text-stone-500">Target Serve Time:</span> <strong class="font-mono text-sm">${formatClockTime(serveMins)}</strong></div>
+            ${hasPlan ? `<div><span class="font-semibold text-stone-500">First Step Starts:</span> <strong class="font-mono">${startClock}</strong></div>` : ""}
+            <div class="text-[11px] text-stone-500">Printed ${escapeHtml(printedDate)}</div>
+          </div>
+        </div>
+      `;
+
+      // Executive Summary & Oven Strategy
+      if (hasPlan && (opts.includeTimeline || opts.includeMakeAhead)) {
+        html += `
+          <div class="border border-stone-300 rounded-lg p-3 mb-4 space-y-1.5 break-inside-avoid">
+            <p class="text-xs text-stone-800">${escapeHtml(state.plan.mealSummary)}</p>
+            <p class="text-xs text-black"><strong class="uppercase tracking-wider text-[10px] mr-1.5 px-1.5 py-0.5 border border-stone-400 rounded">Oven Strategy</strong>${escapeHtml(state.plan.ovenStrategy)}</p>
+          </div>
+        `;
+      }
+
+      // Section 1: Make-Ahead & Set Aside
+      if (opts.includeMakeAhead && hasMakeAhead) {
+        html += `
+          <div class="mb-5">
+            <h2 class="text-base font-extrabold uppercase tracking-wider border-b border-stone-400 pb-1 mb-2.5 break-after-avoid">
+              Make-Ahead &amp; Set Aside (${state.plan.makeAheadItems.length})
+            </h2>
+            <div class="space-y-2.5">
+              ${state.plan.makeAheadItems.map((item) => {
+                const st = getStationMeta(item.station);
+                return `
+                  <div class="border border-stone-300 rounded-lg p-3 break-inside-avoid">
+                    <div class="flex items-start gap-2.5">
+                      <span class="mt-0.5 inline-block w-4 h-4 rounded-sm border-2 border-stone-800 shrink-0"></span>
+                      <div class="flex-1 space-y-1">
+                        <div class="flex flex-wrap items-baseline justify-between gap-2">
+                          <strong class="text-sm text-black">${escapeHtml(item.dish)}</strong>
+                          <span class="text-xs font-semibold text-stone-700">${escapeHtml(item.whenToMake)} &bull; ${escapeHtml(st.label)}${item.durationMinutes > 0 ? ` &bull; ${item.durationMinutes} min` : ""}</span>
+                        </div>
+                        <p class="text-xs text-stone-800">${escapeHtml(item.instructions)}</p>
+                        <p class="text-xs text-stone-700"><strong>Store &amp; Reheat:</strong> ${escapeHtml(item.storageAndReheat)}</p>
+                      </div>
+                    </div>
+                  </div>
+                `;
+              }).join("")}
+            </div>
+          </div>
+        `;
+      }
+
+      // Section 2: Synchronized Cooking Timeline
+      if (opts.includeTimeline && hasPlan) {
+        html += `
+          <div class="mb-5">
+            <h2 class="text-base font-extrabold uppercase tracking-wider border-b border-stone-400 pb-1 mb-2.5 break-after-avoid">
+              Synchronized Cooking Timeline (${state.plan.timelineSteps.length} Steps)
+            </h2>
+            <div class="divide-y divide-stone-300 border-t border-b border-stone-300">
+              ${state.plan.timelineSteps.map((step) => {
+                const st = getStationMeta(step.station);
+                const clockTime = formatClockTime(serveMins - step.offsetMinutesBeforeServe);
+                const isChecked = !opts.blankCheckboxes && Boolean(state.completedSteps[step.id]);
+                return `
+                  <div class="py-2.5 flex items-start gap-3 break-inside-avoid">
+                    <div class="pt-0.5 shrink-0">
+                      <span class="inline-flex items-center justify-center w-4 h-4 rounded-sm border-2 border-stone-800 text-[11px] font-bold">
+                        ${isChecked ? "&#10003;" : ""}
+                      </span>
+                    </div>
+                    <div class="w-24 shrink-0">
+                      <div class="font-mono font-extrabold text-sm text-black">${clockTime}</div>
+                      <div class="font-mono text-[10px] text-stone-600">${formatOffsetLabel(step.offsetMinutesBeforeServe)}</div>
+                    </div>
+                    <div class="flex-1 space-y-0.5 min-w-0">
+                      <div class="flex flex-wrap items-center gap-1.5 text-[11px]">
+                        <span class="font-bold uppercase tracking-wide text-stone-700">${escapeHtml(step.dish)}</span>
+                        <span class="px-1.5 py-0.5 rounded border border-stone-400 font-semibold text-black">${escapeHtml(st.label)}</span>
+                        ${step.temperature ? `<span class="px-1.5 py-0.5 rounded bg-stone-100 border border-stone-300 font-mono font-bold text-black">${escapeHtml(step.temperature)}</span>` : ""}
+                        ${step.durationMinutes > 0 ? `<span class="font-mono font-semibold text-stone-700">Timer: ${step.durationMinutes} min</span>` : ""}
+                      </div>
+                      <div class="font-bold text-sm text-black">${escapeHtml(step.title)}</div>
+                      <p class="text-xs text-stone-800 leading-relaxed">${escapeHtml(step.instructions)}</p>
+                      ${step.tips ? `<p class="text-[11px] text-stone-600 italic">Tip: ${escapeHtml(step.tips)}</p>` : ""}
+                    </div>
+                  </div>
+                `;
+              }).join("")}
+            </div>
+          </div>
+        `;
+      }
+
+      // Section 3: Recipe Ingredients & Full Instructions Reference
+      if (opts.includeRecipes && hasRecipes) {
+        const pageBreakClass = (opts.includeTimeline || opts.includeMakeAhead) ? "break-before-page pt-2" : "";
+        html += `
+          <div class="${pageBreakClass}">
+            <h2 class="text-base font-extrabold uppercase tracking-wider border-b border-stone-400 pb-1 mb-3 break-after-avoid">
+              Recipe Ingredients &amp; Instructions Reference (${state.recipes.length} Dishes)
+            </h2>
+            <div class="space-y-3.5">
+              ${state.recipes.map((r, idx) => `
+                <div class="border border-stone-300 rounded-lg p-3.5 break-inside-avoid space-y-2">
+                  <h3 class="text-sm font-extrabold text-black border-b border-stone-200 pb-1">${idx + 1}. ${escapeHtml(r.name)}</h3>
+                  <div>
+                    <div class="text-[10px] font-bold uppercase tracking-wider text-stone-500">Ingredients</div>
+                    <p class="text-xs text-stone-900 whitespace-pre-line mt-0.5">${escapeHtml(r.ingredients)}</p>
+                  </div>
+                  <div>
+                    <div class="text-[10px] font-bold uppercase tracking-wider text-stone-500">Instructions</div>
+                    <p class="text-xs text-stone-800 whitespace-pre-line mt-0.5 leading-relaxed">${escapeHtml(r.instructions)}</p>
+                  </div>
+                </div>
+              `).join("")}
+            </div>
+          </div>
+        `;
+      }
+
+      container.innerHTML = html;
+    }
+
+    /** Build the print sheet with chosen modal options and trigger the browser print dialog. */
+    function executePrint() {
+      const options = {
+        includeMakeAhead: document.getElementById("print-opt-makeahead").checked,
+        includeTimeline: document.getElementById("print-opt-timeline").checked,
+        includeRecipes: document.getElementById("print-opt-recipes").checked,
+        blankCheckboxes: document.getElementById("print-opt-blank-checks").checked
+      };
+
+      if (!options.includeMakeAhead && !options.includeTimeline && !options.includeRecipes) {
+        showToast("Select at least one section to print.", "error");
+        return;
+      }
+
+      renderPrintSheet(options);
+      closePrintModal();
+
+      setTimeout(() => {
+        try {
+          window.print();
+        } catch (err) {
+          showToast("Unable to open print dialog automatically. Try Ctrl+P or Cmd+P.", "error");
+        }
+      }, 120);
+    }
+
+    // Ensure native Ctrl+P / Cmd+P always prints a fresh kitchen run sheet
+    window.addEventListener("beforeprint", () => {
+      const sheet = document.getElementById("print-sheet");
+      if (sheet && !sheet.innerHTML.trim()) {
+        renderPrintSheet();
+      }
+    });
 
     // Initialize FeastSync once DOM is ready
     window.addEventListener("DOMContentLoaded", initApp);
