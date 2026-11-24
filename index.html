@@ -71,28 +71,28 @@
       </div>
 
       <!-- Primary Tab Navigation -->
-      <nav class="flex items-center bg-parchment p-1 rounded-xl border border-stone-200/70 w-full sm:w-auto justify-between sm:justify-start" aria-label="Primary sections">
-        <button id="tab-btn-setup" type="button" onclick="switchTab('setup')" class="flex-1 sm:flex-none px-3.5 py-2 rounded-lg text-sm font-semibold transition-all bg-white text-terracotta-700 shadow-sm">
+      <nav class="order-3 md:order-2 flex items-center bg-parchment p-1 rounded-xl border border-stone-200/70 w-full md:w-auto justify-between md:justify-start" aria-label="Primary sections">
+        <button id="tab-btn-setup" type="button" onclick="switchTab('setup')" class="flex-1 md:flex-none px-3.5 py-2 rounded-lg text-sm font-semibold transition-all bg-white text-terracotta-700 shadow-sm">
           1. Recipes
         </button>
-        <button id="tab-btn-plan" type="button" onclick="switchTab('plan')" class="flex-1 sm:flex-none px-3.5 py-2 rounded-lg text-sm font-semibold transition-all text-stone-600 hover:text-charcoal">
+        <button id="tab-btn-plan" type="button" onclick="switchTab('plan')" class="flex-1 md:flex-none px-3.5 py-2 rounded-lg text-sm font-semibold transition-all text-stone-600 hover:text-charcoal">
           2. Schedule
           <span id="badge-plan-count" class="hidden ml-1 px-1.5 py-0.5 text-xs rounded-full bg-terracotta-100 text-terracotta-700">0</span>
         </button>
-        <button id="tab-btn-timers" type="button" onclick="switchTab('timers')" class="flex-1 sm:flex-none px-3.5 py-2 rounded-lg text-sm font-semibold transition-all text-stone-600 hover:text-charcoal flex items-center justify-center gap-1.5">
+        <button id="tab-btn-timers" type="button" onclick="switchTab('timers')" class="flex-1 md:flex-none px-3.5 py-2 rounded-lg text-sm font-semibold transition-all text-stone-600 hover:text-charcoal flex items-center justify-center gap-1.5">
           3. Timers
           <span id="badge-active-timers" class="hidden px-1.5 py-0.5 text-xs rounded-full bg-terracotta-600 text-white animate-pulse">0</span>
         </button>
       </nav>
 
-      <!-- Utility Controls (Sound & Cookie Status) -->
-      <div class="hidden md:flex items-center gap-2">
-        <button type="button" onclick="openPrintModal()" class="p-2.5 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-600 transition-colors" title="Print timeline & instructions" aria-label="Print timeline and instructions">
+      <!-- Utility Controls (Print, Sound, Cookies & API Settings Gear) -->
+      <div class="order-2 md:order-3 flex items-center gap-2">
+        <button type="button" onclick="openPrintModal()" class="hidden sm:inline-flex p-2.5 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-600 transition-colors" title="Print timeline & instructions" aria-label="Print timeline and instructions">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
           </svg>
         </button>
-        <button id="btn-sound-toggle" type="button" onclick="toggleSound()" class="p-2.5 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-600 transition-colors" title="Toggle timer alarm chime">
+        <button id="btn-sound-toggle" type="button" onclick="toggleSound()" class="p-2.5 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-600 transition-colors" title="Toggle timer alarm chime" aria-label="Toggle timer alarm chime">
           <svg id="icon-sound-on" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/>
           </svg>
@@ -100,9 +100,16 @@
             <path stroke-linecap="round" stroke-linejoin="round" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15zM17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"/>
           </svg>
         </button>
-        <button type="button" onclick="openStorageModal()" class="px-3 py-2 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-xs font-semibold text-stone-600 flex items-center gap-1.5 transition-colors">
+        <button type="button" onclick="openStorageModal()" class="hidden md:flex px-3 py-2 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-xs font-semibold text-stone-600 items-center gap-1.5 transition-colors">
           <span id="cookie-dot" class="w-2 h-2 rounded-full bg-sage-600"></span>
           <span id="cookie-status-label">Cookies</span>
+        </button>
+        <button id="btn-ai-settings" type="button" onclick="openAiSettingsModal(false)" class="relative p-2.5 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-700 hover:text-terracotta-700 transition-colors" title="AI &amp; API Settings" aria-label="Open AI and API Settings">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+          <span id="gear-key-dot" class="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white bg-amber-500"></span>
         </button>
       </div>
     </div>
@@ -145,134 +152,88 @@
     <!-- =================================================================== -->
     <section id="view-setup" class="space-y-6">
 
-      <!-- Top Grid: Meal Info + AI Provider Card -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-
-        <!-- Left Card: Meal Target & Customizable Kitchen Hardware -->
-        <div class="lg:col-span-7 bg-white rounded-2xl border border-stone-200/90 shadow-sm p-5 sm:p-6 space-y-5">
-          <div class="flex flex-wrap items-start justify-between gap-2">
-            <div>
-              <h2 class="text-lg font-bold text-charcoal">Meal &amp; Kitchen Setup</h2>
-              <p class="text-sm text-stone-500">Set your serving goal and customize your ovens and burners.</p>
-            </div>
-            <button type="button" onclick="openStorageModal()" class="md:hidden px-3 py-1.5 rounded-lg border border-stone-200 bg-stone-50 text-xs font-semibold text-stone-600">
+      <!-- Meal Target & Customizable Kitchen Hardware Card -->
+      <div class="bg-white rounded-2xl border border-stone-200/90 shadow-sm p-5 sm:p-6 space-y-5">
+        <div class="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 class="text-lg font-bold text-charcoal">Meal &amp; Kitchen Setup</h2>
+            <p class="text-sm text-stone-500">Set your serving goal and customize your ovens and burners.</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <!-- Compact AI Connection Status Pill (Opens API Settings Modal) -->
+            <button type="button" onclick="openAiSettingsModal(false)" class="px-3 py-1.5 rounded-xl border border-stone-200 bg-cream/80 hover:bg-parchment text-xs font-semibold text-charcoal flex items-center gap-2 transition-colors">
+              <span id="setup-ai-status-dot" class="w-2 h-2 rounded-full bg-amber-500 shrink-0"></span>
+              <span id="setup-ai-status-text">AI: Not configured — Click to add key</span>
+            </button>
+            <button type="button" onclick="openStorageModal()" class="md:hidden px-3 py-1.5 rounded-xl border border-stone-200 bg-stone-50 text-xs font-semibold text-stone-600">
               Cookie Storage
             </button>
           </div>
+        </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label for="input-meal-name" class="block text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1.5">Meal Occasion</label>
-              <input id="input-meal-name" type="text" placeholder="e.g., Thanksgiving Dinner" class="w-full rounded-xl border border-stone-300 bg-cream/40 px-3.5 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-terracotta-500 focus:border-terracotta-500" oninput="handleConfigChange()">
-            </div>
-            <div>
-              <label for="input-serve-time" class="block text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1.5">Target Serving Time</label>
-              <input id="input-serve-time" type="time" value="17:00" class="w-full rounded-xl border border-stone-300 bg-cream/40 px-3.5 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-terracotta-500 focus:border-terracotta-500" onchange="handleConfigChange()">
-            </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label for="input-meal-name" class="block text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1.5">Meal Occasion</label>
+            <input id="input-meal-name" type="text" placeholder="e.g., Thanksgiving Dinner" class="w-full rounded-xl border border-stone-300 bg-cream/40 px-3.5 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-terracotta-500 focus:border-terracotta-500" oninput="handleConfigChange()">
           </div>
-
-          <!-- Customizable Kitchen Equipment Steppers -->
-          <div class="rounded-xl bg-parchment/70 border border-stone-200/80 p-4 space-y-3">
-            <div class="flex flex-wrap items-center justify-between gap-2">
-              <span class="text-xs font-bold uppercase tracking-wider text-stone-600">Customize Kitchen Equipment (Sent to AI)</span>
-              <div class="flex items-center gap-2">
-                <span class="text-xs font-medium text-sage-700 bg-sage-100 px-2 py-0.5 rounded-full">Conflict-Free Scheduling</span>
-                <button type="button" onclick="resetKitchenDefaults()" class="text-[11px] font-semibold text-terracotta-600 hover:underline">Reset Default</button>
-              </div>
-            </div>
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-              <!-- Ovens Stepper -->
-              <div class="bg-white rounded-xl p-2.5 border border-stone-200/70 flex flex-col items-center justify-between gap-1.5">
-                <div class="text-[11px] font-bold uppercase tracking-wider text-amber-700">Ovens</div>
-                <div class="flex items-center gap-2">
-                  <button type="button" onclick="adjustKitchenHardware('ovens', -1)" class="w-8 h-8 rounded-lg bg-stone-100 hover:bg-stone-200 active:scale-95 text-charcoal font-bold text-sm flex items-center justify-center transition-all" aria-label="Decrease ovens">&minus;</button>
-                  <span id="cfg-ovens-val" class="w-5 text-center font-mono text-base font-extrabold text-amber-600">1</span>
-                  <button type="button" onclick="adjustKitchenHardware('ovens', 1)" class="w-8 h-8 rounded-lg bg-stone-100 hover:bg-stone-200 active:scale-95 text-charcoal font-bold text-sm flex items-center justify-center transition-all" aria-label="Increase ovens">+</button>
-                </div>
-                <div class="text-[10px] text-stone-500 font-medium">0&ndash;3 Ovens</div>
-              </div>
-
-              <!-- Large Burners Stepper -->
-              <div class="bg-white rounded-xl p-2.5 border border-stone-200/70 flex flex-col items-center justify-between gap-1.5">
-                <div class="text-[11px] font-bold uppercase tracking-wider text-orange-700">Large</div>
-                <div class="flex items-center gap-2">
-                  <button type="button" onclick="adjustKitchenHardware('largeBurners', -1)" class="w-8 h-8 rounded-lg bg-stone-100 hover:bg-stone-200 active:scale-95 text-charcoal font-bold text-sm flex items-center justify-center transition-all" aria-label="Decrease large burners">&minus;</button>
-                  <span id="cfg-large-val" class="w-5 text-center font-mono text-base font-extrabold text-orange-600">2</span>
-                  <button type="button" onclick="adjustKitchenHardware('largeBurners', 1)" class="w-8 h-8 rounded-lg bg-stone-100 hover:bg-stone-200 active:scale-95 text-charcoal font-bold text-sm flex items-center justify-center transition-all" aria-label="Increase large burners">+</button>
-                </div>
-                <div class="text-[10px] text-stone-500 font-medium">Stockpots / Skillets</div>
-              </div>
-
-              <!-- Medium Burners Stepper -->
-              <div class="bg-white rounded-xl p-2.5 border border-stone-200/70 flex flex-col items-center justify-between gap-1.5">
-                <div class="text-[11px] font-bold uppercase tracking-wider text-sky-700">Medium</div>
-                <div class="flex items-center gap-2">
-                  <button type="button" onclick="adjustKitchenHardware('mediumBurners', -1)" class="w-8 h-8 rounded-lg bg-stone-100 hover:bg-stone-200 active:scale-95 text-charcoal font-bold text-sm flex items-center justify-center transition-all" aria-label="Decrease medium burners">&minus;</button>
-                  <span id="cfg-medium-val" class="w-5 text-center font-mono text-base font-extrabold text-sky-600">0</span>
-                  <button type="button" onclick="adjustKitchenHardware('mediumBurners', 1)" class="w-8 h-8 rounded-lg bg-stone-100 hover:bg-stone-200 active:scale-95 text-charcoal font-bold text-sm flex items-center justify-center transition-all" aria-label="Increase medium burners">+</button>
-                </div>
-                <div class="text-[10px] text-stone-500 font-medium">Everyday Pans</div>
-              </div>
-
-              <!-- Small Burners Stepper -->
-              <div class="bg-white rounded-xl p-2.5 border border-stone-200/70 flex flex-col items-center justify-between gap-1.5">
-                <div class="text-[11px] font-bold uppercase tracking-wider text-teal-700">Small</div>
-                <div class="flex items-center gap-2">
-                  <button type="button" onclick="adjustKitchenHardware('smallBurners', -1)" class="w-8 h-8 rounded-lg bg-stone-100 hover:bg-stone-200 active:scale-95 text-charcoal font-bold text-sm flex items-center justify-center transition-all" aria-label="Decrease small burners">&minus;</button>
-                  <span id="cfg-small-val" class="w-5 text-center font-mono text-base font-extrabold text-teal-600">2</span>
-                  <button type="button" onclick="adjustKitchenHardware('smallBurners', 1)" class="w-8 h-8 rounded-lg bg-stone-100 hover:bg-stone-200 active:scale-95 text-charcoal font-bold text-sm flex items-center justify-center transition-all" aria-label="Increase small burners">+</button>
-                </div>
-                <div class="text-[10px] text-stone-500 font-medium">Sauces / Simmer</div>
-              </div>
-            </div>
+          <div>
+            <label for="input-serve-time" class="block text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1.5">Target Serving Time</label>
+            <input id="input-serve-time" type="time" value="17:00" class="w-full rounded-xl border border-stone-300 bg-cream/40 px-3.5 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-terracotta-500 focus:border-terracotta-500" onchange="handleConfigChange()">
           </div>
         </div>
 
-        <!-- Right Card: AI Provider & API Key (Gemini or ChatGPT) -->
-        <div class="lg:col-span-5 bg-white rounded-2xl border border-stone-200/90 shadow-sm p-5 sm:p-6 flex flex-col justify-between space-y-4">
-          <div class="space-y-3.5">
-            <div class="flex items-center justify-between">
-              <h2 class="text-lg font-bold text-charcoal">AI Kitchen Planner</h2>
-              <span class="text-[11px] font-semibold text-stone-500 bg-stone-100 px-2.5 py-1 rounded-full">Saved in Cookie</span>
+        <!-- Customizable Kitchen Equipment Steppers -->
+        <div class="rounded-xl bg-parchment/70 border border-stone-200/80 p-4 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-stone-600">Customize Kitchen Equipment (Sent to AI)</span>
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-medium text-sage-700 bg-sage-100 px-2 py-0.5 rounded-full">Conflict-Free Scheduling</span>
+              <button type="button" onclick="resetKitchenDefaults()" class="text-[11px] font-semibold text-terracotta-600 hover:underline">Reset Default</button>
             </div>
-
-            <!-- Provider Selector -->
-            <div class="grid grid-cols-2 gap-2.5">
-              <button id="provider-btn-gemini" type="button" onclick="selectProvider('gemini')" class="p-3 rounded-xl border-2 border-terracotta-500 bg-terracotta-50/70 text-left transition-all">
-                <div class="text-sm font-bold text-charcoal">Google Gemini</div>
-                <div class="text-[11px] text-stone-500">Live models &bull; Lite first</div>
-              </button>
-              <button id="provider-btn-openai" type="button" onclick="selectProvider('openai')" class="p-3 rounded-xl border-2 border-stone-200 bg-white hover:border-stone-300 text-left transition-all">
-                <div class="text-sm font-bold text-charcoal">OpenAI ChatGPT</div>
-                <div class="text-[11px] text-stone-500">Live models &bull; Lite first</div>
-              </button>
-            </div>
-
-            <!-- API Key Input -->
-            <div>
-              <div class="flex items-center justify-between mb-1">
-                <label for="input-api-key" id="label-api-key" class="block text-xs font-semibold uppercase tracking-wider text-stone-500">Gemini API Key</label>
-                <button type="button" onclick="toggleApiKeyVisibility()" id="btn-toggle-key" class="text-xs font-semibold text-terracotta-600 hover:underline">Show</button>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+            <!-- Ovens Stepper -->
+            <div class="bg-white rounded-xl p-2.5 border border-stone-200/70 flex flex-col items-center justify-between gap-1.5">
+              <div class="text-[11px] font-bold uppercase tracking-wider text-amber-700">Ovens</div>
+              <div class="flex items-center gap-2">
+                <button type="button" onclick="adjustKitchenHardware('ovens', -1)" class="w-8 h-8 rounded-lg bg-stone-100 hover:bg-stone-200 active:scale-95 text-charcoal font-bold text-sm flex items-center justify-center transition-all" aria-label="Decrease ovens">&minus;</button>
+                <span id="cfg-ovens-val" class="w-5 text-center font-mono text-base font-extrabold text-amber-600">1</span>
+                <button type="button" onclick="adjustKitchenHardware('ovens', 1)" class="w-8 h-8 rounded-lg bg-stone-100 hover:bg-stone-200 active:scale-95 text-charcoal font-bold text-sm flex items-center justify-center transition-all" aria-label="Increase ovens">+</button>
               </div>
-              <input id="input-api-key" type="password" autocomplete="off" placeholder="Paste your API key to load available models..." class="w-full rounded-xl border border-stone-300 bg-cream/40 px-3.5 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-terracotta-500 focus:border-terracotta-500" oninput="handleApiKeyInput()">
+              <div class="text-[10px] text-stone-500 font-medium">0&ndash;3 Ovens</div>
             </div>
 
-            <!-- Dynamic Model Selector (Works for both Gemini & OpenAI, Lite Prioritized) -->
-            <div>
-              <div class="flex items-center justify-between mb-1 gap-2">
-                <label for="select-ai-model" class="block text-xs font-semibold uppercase tracking-wider text-stone-500">AI Model (Lite Prioritized)</label>
-                <button id="btn-fetch-models" type="button" onclick="fetchAvailableModels({ silent: false, autoSelectLite: true })" class="text-xs font-semibold text-terracotta-600 hover:text-terracotta-700 hover:underline flex items-center gap-1 disabled:opacity-50">
-                  <svg id="icon-fetch-models-spin" class="w-3.5 h-3.5 animate-spin hidden" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-                  </svg>
-                  <span id="label-fetch-models">Fetch Models</span>
-                </button>
+            <!-- Large Burners Stepper -->
+            <div class="bg-white rounded-xl p-2.5 border border-stone-200/70 flex flex-col items-center justify-between gap-1.5">
+              <div class="text-[11px] font-bold uppercase tracking-wider text-orange-700">Large</div>
+              <div class="flex items-center gap-2">
+                <button type="button" onclick="adjustKitchenHardware('largeBurners', -1)" class="w-8 h-8 rounded-lg bg-stone-100 hover:bg-stone-200 active:scale-95 text-charcoal font-bold text-sm flex items-center justify-center transition-all" aria-label="Decrease large burners">&minus;</button>
+                <span id="cfg-large-val" class="w-5 text-center font-mono text-base font-extrabold text-orange-600">2</span>
+                <button type="button" onclick="adjustKitchenHardware('largeBurners', 1)" class="w-8 h-8 rounded-lg bg-stone-100 hover:bg-stone-200 active:scale-95 text-charcoal font-bold text-sm flex items-center justify-center transition-all" aria-label="Increase large burners">+</button>
               </div>
-              <select id="select-ai-model" onchange="handleModelSelectChange()" class="w-full rounded-xl border border-stone-300 bg-cream/40 px-3 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-terracotta-500"></select>
-              <p id="model-fetch-status" class="mt-1.5 text-[11px] text-stone-500 leading-relaxed">
-                Enter your API key to automatically pull live models from your account. Stored locally in your browser cookie.
-              </p>
+              <div class="text-[10px] text-stone-500 font-medium">Stockpots / Skillets</div>
+            </div>
+
+            <!-- Medium Burners Stepper -->
+            <div class="bg-white rounded-xl p-2.5 border border-stone-200/70 flex flex-col items-center justify-between gap-1.5">
+              <div class="text-[11px] font-bold uppercase tracking-wider text-sky-700">Medium</div>
+              <div class="flex items-center gap-2">
+                <button type="button" onclick="adjustKitchenHardware('mediumBurners', -1)" class="w-8 h-8 rounded-lg bg-stone-100 hover:bg-stone-200 active:scale-95 text-charcoal font-bold text-sm flex items-center justify-center transition-all" aria-label="Decrease medium burners">&minus;</button>
+                <span id="cfg-medium-val" class="w-5 text-center font-mono text-base font-extrabold text-sky-600">0</span>
+                <button type="button" onclick="adjustKitchenHardware('mediumBurners', 1)" class="w-8 h-8 rounded-lg bg-stone-100 hover:bg-stone-200 active:scale-95 text-charcoal font-bold text-sm flex items-center justify-center transition-all" aria-label="Increase medium burners">+</button>
+              </div>
+              <div class="text-[10px] text-stone-500 font-medium">Everyday Pans</div>
+            </div>
+
+            <!-- Small Burners Stepper -->
+            <div class="bg-white rounded-xl p-2.5 border border-stone-200/70 flex flex-col items-center justify-between gap-1.5">
+              <div class="text-[11px] font-bold uppercase tracking-wider text-teal-700">Small</div>
+              <div class="flex items-center gap-2">
+                <button type="button" onclick="adjustKitchenHardware('smallBurners', -1)" class="w-8 h-8 rounded-lg bg-stone-100 hover:bg-stone-200 active:scale-95 text-charcoal font-bold text-sm flex items-center justify-center transition-all" aria-label="Decrease small burners">&minus;</button>
+                <span id="cfg-small-val" class="w-5 text-center font-mono text-base font-extrabold text-teal-600">2</span>
+                <button type="button" onclick="adjustKitchenHardware('smallBurners', 1)" class="w-8 h-8 rounded-lg bg-stone-100 hover:bg-stone-200 active:scale-95 text-charcoal font-bold text-sm flex items-center justify-center transition-all" aria-label="Increase small burners">+</button>
+              </div>
+              <div class="text-[10px] text-stone-500 font-medium">Sauces / Simmer</div>
             </div>
           </div>
         </div>
@@ -695,6 +656,129 @@
   </div>
 
   <!-- ===================================================================== -->
+  <!-- MODAL 5: AI & API SETTINGS (AUTO-OPENS ON FIRST VISIT & VIA GEAR)     -->
+  <!-- ===================================================================== -->
+  <div id="modal-ai-settings" class="hidden fixed inset-0 z-50 bg-charcoal/60 backdrop-blur-sm flex items-center justify-center p-4 print:hidden">
+    <div class="bg-white rounded-2xl shadow-2xl border border-stone-200 w-full max-w-xl max-h-[92vh] flex flex-col overflow-hidden">
+      <div class="px-6 py-4 border-b border-stone-200 flex items-start justify-between gap-3">
+        <div>
+          <div class="flex items-center gap-2">
+            <h3 id="ai-modal-title" class="text-lg font-bold text-charcoal">AI &amp; API Settings</h3>
+            <span class="text-[11px] font-semibold text-stone-500 bg-stone-100 px-2 py-0.5 rounded-full">Saved in Cookie</span>
+          </div>
+          <p id="ai-modal-subtitle" class="text-xs text-stone-500 mt-0.5">Connect your Google Gemini or OpenAI key so FeastSync can build your meal timeline.</p>
+        </div>
+        <button type="button" onclick="closeAiSettingsModal()" class="p-2 rounded-lg text-stone-400 hover:text-charcoal hover:bg-stone-100 shrink-0" aria-label="Close API settings">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-5 overflow-y-auto">
+        <!-- Provider Selector -->
+        <div class="space-y-1.5">
+          <span class="block text-xs font-semibold uppercase tracking-wider text-stone-500">Choose AI Provider</span>
+          <div class="grid grid-cols-2 gap-2.5">
+            <button id="provider-btn-gemini" type="button" onclick="selectProvider('gemini')" class="p-3 rounded-xl border-2 border-terracotta-500 bg-terracotta-50/70 text-left transition-all">
+              <div class="flex items-center justify-between gap-1">
+                <span class="text-sm font-bold text-charcoal">Google Gemini</span>
+                <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-sage-100 text-sage-700">Free Tier</span>
+              </div>
+              <div class="text-[11px] text-stone-500 mt-0.5">Live models &bull; Lite first</div>
+            </button>
+            <button id="provider-btn-openai" type="button" onclick="selectProvider('openai')" class="p-3 rounded-xl border-2 border-stone-200 bg-white hover:border-stone-300 text-left transition-all">
+              <div class="text-sm font-bold text-charcoal">OpenAI ChatGPT</div>
+              <div class="text-[11px] text-stone-500 mt-0.5">Live models &bull; Lite first</div>
+            </button>
+          </div>
+        </div>
+
+        <!-- API Key Input -->
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label for="input-api-key" id="label-api-key" class="block text-xs font-semibold uppercase tracking-wider text-stone-500">Gemini API Key</label>
+            <button type="button" onclick="toggleApiKeyVisibility()" id="btn-toggle-key" class="text-xs font-semibold text-terracotta-600 hover:underline">Show</button>
+          </div>
+          <input id="input-api-key" type="password" autocomplete="off" placeholder="Paste your API key to load available models..." class="w-full rounded-xl border border-stone-300 bg-cream/40 px-3.5 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-terracotta-500 focus:border-terracotta-500" oninput="handleApiKeyInput()">
+          <p class="mt-1 text-[11px] text-stone-500">Your key stays strictly in your own browser cookie and is sent only to your chosen AI provider.</p>
+        </div>
+
+        <!-- Dynamic Model Selector -->
+        <div>
+          <div class="flex items-center justify-between mb-1 gap-2">
+            <label for="select-ai-model" class="block text-xs font-semibold uppercase tracking-wider text-stone-500">AI Model (Lite Prioritized)</label>
+            <button id="btn-fetch-models" type="button" onclick="fetchAvailableModels({ silent: false, autoSelectLite: true })" class="text-xs font-semibold text-terracotta-600 hover:text-terracotta-700 hover:underline flex items-center gap-1 disabled:opacity-50">
+              <svg id="icon-fetch-models-spin" class="w-3.5 h-3.5 animate-spin hidden" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+              </svg>
+              <span id="label-fetch-models">Fetch Models</span>
+            </button>
+          </div>
+          <select id="select-ai-model" onchange="handleModelSelectChange()" class="w-full rounded-xl border border-stone-300 bg-cream/40 px-3 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-terracotta-500"></select>
+          <p id="model-fetch-status" class="mt-1.5 text-[11px] text-stone-500 leading-relaxed">
+            Enter your API key to automatically pull live models from your account.
+          </p>
+        </div>
+
+        <!-- Step-by-Step Guide: How to Get a Free Google Gemini API Key -->
+        <details id="guide-free-gemini" open class="rounded-xl bg-sage-50 border border-sage-600/20 p-4 group">
+          <summary class="cursor-pointer list-none flex items-center justify-between gap-2 text-xs sm:text-sm font-bold text-sage-700">
+            <span class="flex items-center gap-2">
+              <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              How to get a FREE Google Gemini API Key (No credit card required)
+            </span>
+            <svg class="w-4 h-4 shrink-0 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </summary>
+          <ol class="mt-3 space-y-2 text-xs text-stone-700 list-decimal list-inside leading-relaxed">
+            <li>
+              Go to
+              <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" class="font-bold text-terracotta-700 underline hover:text-terracotta-600">Google AI Studio (aistudio.google.com/apikey)</a>
+              and sign in with your regular Google account.
+            </li>
+            <li>Click the blue <strong>&ldquo;Create API key&rdquo;</strong> button (accept the terms of service if it&rsquo;s your first visit, and choose a project if prompted).</li>
+            <li>Click <strong>Copy</strong> next to your new key (it starts with <code class="bg-white px-1 py-0.5 rounded border border-sage-600/20 font-mono text-[11px]">AIza...</code>).</li>
+            <li>Paste the key into the <strong>Gemini API Key</strong> field above &mdash; FeastSync will automatically fetch your available models and select a fast, free-tier <strong>Lite</strong> model!</li>
+          </ol>
+          <div class="mt-3 pt-2.5 border-t border-sage-600/15 flex flex-wrap items-center justify-between gap-2">
+            <span class="text-[11px] text-sage-700/90">Google&rsquo;s free tier is more than enough for holiday meal planning.</span>
+            <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-lg bg-sage-700 hover:bg-sage-600 text-white text-xs font-bold transition-colors inline-flex items-center gap-1.5">
+              Open Google AI Studio
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+              </svg>
+            </a>
+          </div>
+        </details>
+
+        <!-- Compact OpenAI API Key Hint (Shown when OpenAI is selected) -->
+        <div id="guide-openai-note" class="hidden rounded-xl bg-parchment/80 border border-stone-200 p-3.5 text-xs text-stone-700 space-y-1.5">
+          <div class="font-bold text-charcoal">Using OpenAI ChatGPT?</div>
+          <p class="leading-relaxed">
+            Create or copy an API key from
+            <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" class="font-bold text-terracotta-700 underline">platform.openai.com/api-keys</a>
+            (note: OpenAI API requires prepaid billing credits). Prefer a free option? Switch to <strong>Google Gemini</strong> above for step-by-step free key instructions.
+          </p>
+        </div>
+      </div>
+
+      <div class="px-6 py-4 border-t border-stone-200 bg-cream/60 flex flex-wrap items-center justify-between gap-2">
+        <button id="btn-ai-modal-skip" type="button" onclick="closeAiSettingsModal()" class="px-4 py-2.5 rounded-xl border border-stone-300 bg-white hover:bg-stone-50 text-xs sm:text-sm font-semibold text-stone-700">
+          Close
+        </button>
+        <button type="button" onclick="saveAndCloseAiSettingsModal()" class="px-5 py-2.5 rounded-xl bg-terracotta-600 hover:bg-terracotta-700 text-white text-xs sm:text-sm font-bold shadow-sm">
+          Save &amp; Continue
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
   <!-- TOAST NOTIFICATION CONTAINER (Replaces browser alert())               -->
   <!-- ===================================================================== -->
   <div id="toast-container" class="fixed top-20 right-4 z-50 flex flex-col gap-2 max-w-sm pointer-events-none print:hidden"></div>
@@ -898,6 +982,7 @@
         geminiApiKey: "",
         openaiApiKey: "",
         soundEnabled: true,
+        aiSetupPrompted: false,
         kitchen: { ...DEFAULT_KITCHEN }
       },
       recipes: [],
@@ -1119,9 +1204,13 @@
       renderAlarmBanner();
       updateCookieStatusBadge();
       updateSoundIcons();
+      updateAiStatusIndicator();
 
       if (getActiveApiKey()) {
         fetchAvailableModels({ silent: true, autoSelectLite: false });
+      } else if (!state.config.aiSetupPrompted) {
+        // First time opening FeastSync with no API key saved -> prompt user for their key
+        openAiSettingsModal(true);
       }
 
       if (tickIntervalId) clearInterval(tickIntervalId);
@@ -1228,6 +1317,7 @@
       document.getElementById("input-api-key").value = getActiveApiKey();
       updateProviderButtonsUI();
       renderModelSelectOptions();
+      updateAiStatusIndicator();
     }
 
     function adjustKitchenHardware(field, delta) {
@@ -1286,10 +1376,34 @@
       document.getElementById("input-api-key").value = getActiveApiKey();
       updateProviderButtonsUI();
       renderModelSelectOptions();
+      updateAiStatusIndicator();
       persistConfig();
 
       if (getActiveApiKey() && runtimeModels[provider].length === 0) {
         fetchAvailableModels({ silent: true, autoSelectLite: false });
+      }
+    }
+
+    function updateProviderButtonsUI() {
+      const isGemini = state.config.provider === "gemini";
+      const btnG = document.getElementById("provider-btn-gemini");
+      const btnO = document.getElementById("provider-btn-openai");
+      const keyLabel = document.getElementById("label-api-key");
+      const geminiGuide = document.getElementById("guide-free-gemini");
+      const openaiNote = document.getElementById("guide-openai-note");
+
+      if (isGemini) {
+        btnG.className = "p-3 rounded-xl border-2 border-terracotta-500 bg-terracotta-50/70 text-left transition-all";
+        btnO.className = "p-3 rounded-xl border-2 border-stone-200 bg-white hover:border-stone-300 text-left transition-all";
+        keyLabel.textContent = "Gemini API Key";
+        if (geminiGuide) geminiGuide.classList.remove("hidden");
+        if (openaiNote) openaiNote.classList.add("hidden");
+      } else {
+        btnO.className = "p-3 rounded-xl border-2 border-terracotta-500 bg-terracotta-50/70 text-left transition-all";
+        btnG.className = "p-3 rounded-xl border-2 border-stone-200 bg-white hover:border-stone-300 text-left transition-all";
+        keyLabel.textContent = "OpenAI API Key";
+        if (geminiGuide) geminiGuide.classList.add("hidden");
+        if (openaiNote) openaiNote.classList.remove("hidden");
       }
     }
 
@@ -1329,6 +1443,7 @@
       } else {
         state.config.openaiApiKey = val;
       }
+      updateAiStatusIndicator();
       persistConfig();
 
       if (modelFetchDebounceId) clearTimeout(modelFetchDebounceId);
@@ -1347,6 +1462,7 @@
       } else {
         state.config.openaiModel = selected;
       }
+      updateAiStatusIndicator();
       persistConfig();
     }
 
@@ -1525,6 +1641,7 @@
         }
 
         renderModelSelectOptions();
+        updateAiStatusIndicator();
 
         const liteCount = models.filter((m) => m.isLite).length;
         statusEl.className = "mt-1.5 text-[11px] text-sage-700 font-medium leading-relaxed";
@@ -2087,7 +2204,8 @@ Output strictly a single JSON object with this exact shape:
         showToast(`Schedule created with ${generatedTimers.length} cooking timers!`, "success");
       } catch (err) {
         console.error("Schedule generation failed:", err);
-        errorText.textContent = err.message || "An unexpected error occurred while contacting the AI provider.";
+        const keyHint = !getActiveApiKey() ? " Click the gear icon in the top right to enter your API key." : "";
+        errorText.textContent = (err.message || "An unexpected error occurred while contacting the AI provider.") + keyHint;
         errorBox.classList.remove("hidden");
       } finally {
         setGeneratingUI(false);
@@ -2925,6 +3043,7 @@ Output strictly a single JSON object with this exact shape:
       state.config.openaiModel = FALLBACK_MODELS.openai[0].id;
       state.config.mealName = "Thanksgiving Dinner";
       state.config.serveTime = "17:00";
+      state.config.aiSetupPrompted = false;
       state.config.kitchen = { ...DEFAULT_KITCHEN };
       runtimeModels = { gemini: [], openai: [] };
 
@@ -2937,6 +3056,7 @@ Output strictly a single JSON object with this exact shape:
       renderActiveTimersDock();
       renderAlarmBanner();
       updateCookieStatusBadge();
+      updateAiStatusIndicator();
       closeStorageModal();
       switchTab("setup");
       showToast("All FeastSync cookies cleared.", "info");
@@ -3196,6 +3316,87 @@ Output strictly a single JSON object with this exact shape:
         renderPrintSheet();
       }
     });
+
+    /**
+     * =========================================================================
+     * 13. AI & API SETTINGS MODAL (FIRST-TIME PROMPT & TOP-RIGHT GEAR)
+     * =========================================================================
+     */
+    function openAiSettingsModal(isFirstVisit = false) {
+      const titleEl = document.getElementById("ai-modal-title");
+      const subEl = document.getElementById("ai-modal-subtitle");
+      const skipBtn = document.getElementById("btn-ai-modal-skip");
+      const geminiGuide = document.getElementById("guide-free-gemini");
+
+      if (isFirstVisit) {
+        titleEl.textContent = "Welcome to FeastSync!";
+        subEl.textContent = "Add your free Google Gemini (or OpenAI) API key to unlock AI meal scheduling & timers.";
+        skipBtn.textContent = "Skip for Now";
+      } else {
+        titleEl.textContent = "AI & API Settings";
+        subEl.textContent = "Switch AI providers, update your API key, or refresh available models anytime.";
+        skipBtn.textContent = "Close";
+      }
+
+      // Auto-expand the free Google Gemini guide if no key is saved yet; collapse it once configured
+      if (geminiGuide) {
+        geminiGuide.open = !getActiveApiKey();
+      }
+
+      syncConfigInputs();
+      document.getElementById("modal-ai-settings").classList.remove("hidden");
+    }
+
+    function closeAiSettingsModal() {
+      document.getElementById("modal-ai-settings").classList.add("hidden");
+      if (!state.config.aiSetupPrompted) {
+        state.config.aiSetupPrompted = true;
+        persistConfig();
+      }
+    }
+
+    function saveAndCloseAiSettingsModal() {
+      state.config.aiSetupPrompted = true;
+      persistConfig();
+      updateAiStatusIndicator();
+      document.getElementById("modal-ai-settings").classList.add("hidden");
+
+      const providerLabel = state.config.provider === "gemini" ? "Google Gemini" : "OpenAI ChatGPT";
+      if (getActiveApiKey()) {
+        showToast(`Saved ${providerLabel} settings (${getActiveModel()})`, "success");
+      } else {
+        showToast("You can add your API key anytime via the top-right gear icon.", "info");
+      }
+    }
+
+    /** Sync the top-right gear dot and Recipes tab AI summary badge with current key & model. */
+    function updateAiStatusIndicator() {
+      const hasKey = Boolean(getActiveApiKey());
+      const providerLabel = state.config.provider === "gemini" ? "Gemini" : "ChatGPT";
+      const modelId = getActiveModel();
+
+      const gearDot = document.getElementById("gear-key-dot");
+      const setupDot = document.getElementById("setup-ai-status-dot");
+      const setupText = document.getElementById("setup-ai-status-text");
+
+      if (gearDot) {
+        gearDot.className = hasKey
+          ? "absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white bg-sage-600"
+          : "absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white bg-amber-500 animate-pulse";
+      }
+
+      if (setupDot) {
+        setupDot.className = hasKey
+          ? "w-2 h-2 rounded-full bg-sage-600 shrink-0"
+          : "w-2 h-2 rounded-full bg-amber-500 shrink-0";
+      }
+
+      if (setupText) {
+        setupText.textContent = hasKey
+          ? `${providerLabel}: ${modelId}`
+          : `${providerLabel}: Add API Key`;
+      }
+    }
 
     // Initialize FeastSync once DOM is ready
     window.addEventListener("DOMContentLoaded", initApp);
