@@ -10,7 +10,3591 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 
+  <!-- Tailwind CSS via CDN for zero-build GitHub Pages deploym<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FeastSync — Big Meal Kitchen Orchestrator & Timers</title>
+
+  <!-- Google Fonts: Inter for UI readability and JetBrains Mono for steady countdown timers -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
   <!-- Tailwind CSS via CDN for zero-build GitHub Pages deployment -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Tone.js for pleasant synthesized kitchen timer chimes (no external audio URLs required) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+
+  <!-- Tailwind Configuration for Warm Culinary Design Tokens -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
+          },
+          colors: {
+            cream: '#FAF7F2',
+            parchment: '#F3ECE2',
+            terracotta: {
+              50: '#FDF4F0',
+              100: '#FAE5DC',
+              200: '#F5C7B5',
+              500: '#C85A32',
+              600: '#B04A24',
+              700: '#8F391A',
+            },
+            sage: {
+              50: '#F1F7F4',
+              100: '#DCECE4',
+              600: '#2E6B50',
+              700: '#23533D',
+            },
+            charcoal: '#1E211F',
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-cream text-charcoal font-sans antialiased min-h-screen flex flex-col selection:bg-terracotta-200 selection:text-charcoal overflow-x-hidden print:bg-white print:text-black">
+
+  <!-- ===================================================================== -->
+  <!-- TOP NAVIGATION BAR & KITCHEN STATUS HEADER                            -->
+  <!-- ===================================================================== -->
+  <header class="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-stone-200/80 shadow-sm print:hidden">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+      <!-- Brand Identity -->
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-terracotta-500 to-terracotta-700 text-white flex items-center justify-center shadow-sm shrink-0">
+          <!-- Timer / Clock SVG Icon -->
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-lg sm:text-xl font-extrabold tracking-tight text-charcoal leading-tight">FeastSync</h1>
+          <p id="header-kitchen-summary" class="text-xs text-stone-500 font-medium">1 Oven &bull; 2 Large &bull; 2 Small Burners</p>
+        </div>
+      </div>
+
+      <!-- Primary Tab Navigation -->
+      <nav class="order-3 md:order-2 flex items-center bg-parchment p-1 rounded-xl border border-stone-200/70 w-full md:w-auto justify-between md:justify-start" aria-label="Primary sections">
+        <button id="tab-btn-setup" type="button" onclick="switchTab('setup')" class="flex-1 md:flex-none px-3.5 py-2 rounded-lg text-sm font-semibold transition-all bg-white text-terracotta-700 shadow-sm">
+          1. Recipes
+        </button>
+        <button id="tab-btn-plan" type="button" onclick="switchTab('plan')" class="flex-1 md:flex-none px-3.5 py-2 rounded-lg text-sm font-semibold transition-all text-stone-600 hover:text-charcoal">
+          2. Schedule
+          <span id="badge-plan-count" class="hidden ml-1 px-1.5 py-0.5 text-xs rounded-full bg-terracotta-100 text-terracotta-700">0</span>
+        </button>
+        <button id="tab-btn-timers" type="button" onclick="switchTab('timers')" class="flex-1 md:flex-none px-3.5 py-2 rounded-lg text-sm font-semibold transition-all text-stone-600 hover:text-charcoal flex items-center justify-center gap-1.5">
+          3. Timers
+          <span id="badge-active-timers" class="hidden px-1.5 py-0.5 text-xs rounded-full bg-terracotta-600 text-white animate-pulse">0</span>
+        </button>
+      </nav>
+
+      <!-- Utility Controls (Print, Sound, Cookies & API Settings Gear) -->
+      <div class="order-2 md:order-3 flex items-center gap-2">
+        <button type="button" onclick="openPrintModal()" class="hidden sm:inline-flex p-2.5 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-600 transition-colors" title="Print timeline & instructions" aria-label="Print timeline and instructions">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+          </svg>
+        </button>
+        <button id="btn-sound-toggle" type="button" onclick="toggleSound()" class="p-2.5 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-600 transition-colors" title="Toggle timer alarm chime" aria-label="Toggle timer alarm chime">
+          <svg id="icon-sound-on" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/>
+          </svg>
+          <svg id="icon-sound-off" class="w-4 h-4 hidden text-stone-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15zM17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"/>
+          </svg>
+        </button>
+        <button type="button" onclick="openStorageModal()" class="hidden md:flex px-3 py-2 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-xs font-semibold text-stone-600 items-center gap-1.5 transition-colors">
+          <span id="cookie-dot" class="w-2 h-2 rounded-full bg-sage-600"></span>
+          <span id="cookie-status-label">Cookies</span>
+        </button>
+        <button id="btn-ai-settings" type="button" onclick="openAiSettingsModal(false)" class="relative p-2.5 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-700 hover:text-terracotta-700 transition-colors" title="AI &amp; API Settings" aria-label="Open AI and API Settings">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+          <span id="gear-key-dot" class="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white bg-amber-500"></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===================================================================== -->
+  <!-- ALARM RINGING BANNER (Shown when any timer reaches 00:00)             -->
+  <!-- ===================================================================== -->
+  <div id="alarm-banner" class="hidden sticky top-[65px] z-20 bg-terracotta-600 text-white shadow-lg border-b border-terracotta-700 print:hidden">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <span class="inline-flex h-8 w-8 rounded-full bg-white/20 items-center justify-center animate-bounce">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+          </svg>
+        </span>
+        <div>
+          <p class="font-bold text-sm sm:text-base" id="alarm-banner-title">Timer Complete!</p>
+          <p class="text-xs text-terracotta-100" id="alarm-banner-sub">Check your dish now.</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button type="button" onclick="switchTab('timers')" class="px-3.5 py-2 rounded-xl bg-white/15 hover:bg-white/25 text-xs font-semibold transition-colors">
+          View Timers
+        </button>
+        <button type="button" onclick="dismissAllAlarms()" class="px-4 py-2 rounded-xl bg-white text-terracotta-700 hover:bg-terracotta-50 text-xs font-bold shadow-sm transition-colors">
+          Dismiss Alarm
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MAIN CONTENT CONTAINER                                                -->
+  <!-- ===================================================================== -->
+  <main class="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 pb-28 print:hidden">
+
+    <!-- =================================================================== -->
+    <!-- TAB 1: RECIPES, MEAL DETAILS & AI CONFIGURATION                     -->
+    <!-- =================================================================== -->
+    <section id="view-setup" class="space-y-6">
+
+      <!-- Meal Target & Customizable Kitchen Hardware Card -->
+      <div class="bg-white rounded-2xl border border-stone-200/90 shadow-sm p-5 sm:p-6 space-y-5">
+        <div class="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 class="text-lg font-bold text-charcoal">Meal &amp; Kitchen Setup</h2>
+            <p class="text-sm text-stone-500">Set your serving goal and customize your ovens and burners.</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <!-- Compact AI Connection Status Pill (Opens API Settings Modal) -->
+            <button type="button" onclick="openAiSettingsModal(false)" class="px-3 py-1.5 rounded-xl border border-stone-200 bg-cream/80 hover:bg-parchment text-xs font-semibold text-charcoal flex items-center gap-2 transition-colors">
+              <span id="setup-ai-status-dot" class="w-2 h-2 rounded-full bg-amber-500 shrink-0"></span>
+              <span id="setup-ai-status-text">AI: Not configured — Click to add key</span>
+            </button>
+            <button type="button" onclick="openStorageModal()" class="md:hidden px-3 py-1.5 rounded-xl border border-stone-200 bg-stone-50 text-xs font-semibold text-stone-600">
+              Cookie Storage
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label for="input-meal-name" class="block text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1.5">Meal Occasion</label>
+            <input id="input-meal-name" type="text" placeholder="e.g., Thanksgiving Dinner" class="w-full rounded-xl border border-stone-300 bg-cream/40 px-3.5 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-terracotta-500 focus:border-terracotta-500" oninput="handleConfigChange()">
+          </div>
+          <div>
+            <label for="input-serve-time" class="block text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1.5">Target Serving Time</label>
+            <input id="input-serve-time" type="time" value="17:00" class="w-full rounded-xl border border-stone-300 bg-cream/40 px-3.5 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-terracotta-500 focus:border-terracotta-500" onchange="handleConfigChange()">
+          </div>
+        </div>
+
+        <!-- Customizable Kitchen Equipment Steppers -->
+        <div class="rounded-xl bg-parchment/70 border border-stone-200/80 p-4 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-stone-600">Customize Kitchen Equipment (Sent to AI)</span>
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-medium text-sage-700 bg-sage-100 px-2 py-0.5 rounded-full">Conflict-Free Scheduling</span>
+              <button type="button" onclick="resetKitchenDefaults()" class="text-[11px] font-semibold text-terracotta-600 hover:underline">Reset Default</button>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+            <!-- Ovens Stepper -->
+            <div class="bg-white rounded-xl p-2.5 border border-stone-200/70 flex flex-col items-center justify-between gap-1.5">
+              <div class="text-[11px] font-bold uppercase tracking-wider text-amber-700">Ovens</div>
+              <div class="flex items-center gap-2">
+                <button type="button" onclick="adjustKitchenHardware('ovens', -1)" class="w-8 h-8 rounded-lg bg-stone-100 hover:bg-stone-200 active:scale-95 text-charcoal font-bold text-sm flex items-center justify-center transition-all" aria-label="Decrease ovens">&minus;</button>
+                <span id="cfg-ovens-val" class="w-5 text-center font-mono text-base font-extrabold text-amber-600">1</span>
+                <button type="button" onclick="adjustKitchenHardware('ovens', 1)" class="w-8 h-8 rounded-lg bg-stone-100 hover:bg-stone-200 active:scale-95 text-charcoal font-bold text-sm flex items-center justify-center transition-all" aria-label="Increase ovens">+</button>
+              </div>
+              <div class="text-[10px] text-stone-500 font-medium">0&ndash;3 Ovens</div>
+            </div>
+
+            <!-- Large Burners Stepper -->
+            <div class="bg-white rounded-xl p-2.5 border border-stone-200/70 flex flex-col items-center justify-between gap-1.5">
+              <div class="text-[11px] font-bold uppercase tracking-wider text-orange-700">Large</div>
+              <div class="flex items-center gap-2">
+                <button type="button" onclick="adjustKitchenHardware('largeBurners', -1)" class="w-8 h-8 rounded-lg bg-stone-100 hover:bg-stone-200 active:scale-95 text-charcoal font-bold text-sm flex items-center justify-center transition-all" aria-label="Decrease large burners">&minus;</button>
+                <span id="cfg-large-val" class="w-5 text-center font-mono text-base font-extrabold text-orange-600">2</span>
+                <button type="button" onclick="adjustKitchenHardware('largeBurners', 1)" class="w-8 h-8 rounded-lg bg-stone-100 hover:bg-stone-200 active:scale-95 text-charcoal font-bold text-sm flex items-center justify-center transition-all" aria-label="Increase large burners">+</button>
+              </div>
+              <div class="text-[10px] text-stone-500 font-medium">Stockpots / Skillets</div>
+            </div>
+
+            <!-- Medium Burners Stepper -->
+            <div class="bg-white rounded-xl p-2.5 border border-stone-200/70 flex flex-col items-center justify-between gap-1.5">
+              <div class="text-[11px] font-bold uppercase tracking-wider text-sky-700">Medium</div>
+              <div class="flex items-center gap-2">
+                <button type="button" onclick="adjustKitchenHardware('mediumBurners', -1)" class="w-8 h-8 rounded-lg bg-stone-100 hover:bg-stone-200 active:scale-95 text-charcoal font-bold text-sm flex items-center justify-center transition-all" aria-label="Decrease medium burners">&minus;</button>
+                <span id="cfg-medium-val" class="w-5 text-center font-mono text-base font-extrabold text-sky-600">0</span>
+                <button type="button" onclick="adjustKitchenHardware('mediumBurners', 1)" class="w-8 h-8 rounded-lg bg-stone-100 hover:bg-stone-200 active:scale-95 text-charcoal font-bold text-sm flex items-center justify-center transition-all" aria-label="Increase medium burners">+</button>
+              </div>
+              <div class="text-[10px] text-stone-500 font-medium">Everyday Pans</div>
+            </div>
+
+            <!-- Small Burners Stepper -->
+            <div class="bg-white rounded-xl p-2.5 border border-stone-200/70 flex flex-col items-center justify-between gap-1.5">
+              <div class="text-[11px] font-bold uppercase tracking-wider text-teal-700">Small</div>
+              <div class="flex items-center gap-2">
+                <button type="button" onclick="adjustKitchenHardware('smallBurners', -1)" class="w-8 h-8 rounded-lg bg-stone-100 hover:bg-stone-200 active:scale-95 text-charcoal font-bold text-sm flex items-center justify-center transition-all" aria-label="Decrease small burners">&minus;</button>
+                <span id="cfg-small-val" class="w-5 text-center font-mono text-base font-extrabold text-teal-600">2</span>
+                <button type="button" onclick="adjustKitchenHardware('smallBurners', 1)" class="w-8 h-8 rounded-lg bg-stone-100 hover:bg-stone-200 active:scale-95 text-charcoal font-bold text-sm flex items-center justify-center transition-all" aria-label="Increase small burners">+</button>
+              </div>
+              <div class="text-[10px] text-stone-500 font-medium">Sauces / Simmer</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================================================================= -->
+      <!-- RECIPES MANAGER SECTION                                           -->
+      <!-- ================================================================= -->
+      <div class="bg-white rounded-2xl border border-stone-200/90 shadow-sm p-5 sm:p-6 space-y-5">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 class="text-lg font-bold text-charcoal">Your Meal Recipes (<span id="recipe-count">0</span>)</h2>
+            <p class="text-sm text-stone-500">Add every dish you plan to cook, including its ingredients and instructions.</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <button type="button" onclick="loadSampleThanksgiving()" class="px-3.5 py-2.5 rounded-xl border border-stone-300 bg-cream hover:bg-parchment text-xs sm:text-sm font-semibold text-stone-700 transition-colors">
+              Load Sample Thanksgiving Menu
+            </button>
+            <button type="button" onclick="openRecipeModal()" class="px-4 py-2.5 rounded-xl bg-charcoal hover:bg-stone-800 text-white text-xs sm:text-sm font-semibold shadow-sm transition-colors flex items-center gap-1.5">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+              </svg>
+              Add Recipe
+            </button>
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div id="recipes-empty" class="rounded-2xl border-2 border-dashed border-stone-200 bg-cream/50 p-8 text-center space-y-3">
+          <div class="w-12 h-12 rounded-2xl bg-parchment text-terracotta-600 mx-auto flex items-center justify-center">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+            </svg>
+          </div>
+          <h3 class="text-base font-bold text-charcoal">No recipes added yet</h3>
+          <p class="text-sm text-stone-500 max-w-md mx-auto">Add your dishes one by one or load our complete 5-dish Thanksgiving sample to see FeastSync build a conflict-free stove, oven, and timer schedule.</p>
+        </div>
+
+        <!-- Recipes Cards Grid -->
+        <div id="recipes-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4 hidden"></div>
+
+        <!-- Error Message Box -->
+        <div id="generate-error" class="hidden rounded-xl bg-red-50 border border-red-200 p-4 text-sm text-red-800 flex items-start gap-3">
+          <svg class="w-5 h-5 text-red-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <div class="flex-1">
+            <p class="font-bold">Could not generate schedule</p>
+            <p id="generate-error-text" class="mt-0.5 text-xs sm:text-sm"></p>
+          </div>
+        </div>
+
+        <!-- Primary Action CTA: Generate Schedule & Timers -->
+        <div class="pt-2 border-t border-stone-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p id="cta-kitchen-summary" class="text-xs text-stone-500">
+            AI will identify make-ahead items, balance your 1 Oven &bull; 2 Large &bull; 2 Small Burners, and generate start-ready timers for every timed step.
+          </p>
+          <button id="btn-generate" type="button" onclick="generateCookingPlan()" class="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-terracotta-600 hover:bg-terracotta-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold text-sm shadow-md shadow-terracotta-600/20 transition-all flex items-center justify-center gap-2.5 shrink-0">
+            <svg id="icon-generate-sparkle" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+            </svg>
+            <svg id="icon-generate-spinner" class="w-5 h-5 animate-spin hidden" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span id="btn-generate-label">Generate Schedule &amp; Timers</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- TAB 2: MAKE-AHEAD GUIDE & SYNCHRONIZED TIMELINE                     -->
+    <!-- =================================================================== -->
+    <section id="view-plan" class="hidden space-y-6">
+
+      <!-- Empty Plan State -->
+      <div id="plan-empty" class="bg-white rounded-2xl border border-stone-200 p-10 text-center space-y-4">
+        <div class="w-14 h-14 rounded-2xl bg-parchment text-terracotta-600 mx-auto flex items-center justify-center">
+          <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+        <h2 class="text-xl font-bold text-charcoal">No cooking schedule generated yet</h2>
+        <p class="text-sm text-stone-500 max-w-md mx-auto">Add your recipes on the Recipes tab and click "Generate Schedule &amp; Timers" to build your synchronized kitchen game plan.</p>
+        <button type="button" onclick="switchTab('setup')" class="px-5 py-2.5 rounded-xl bg-terracotta-600 hover:bg-terracotta-700 text-white text-sm font-bold">
+          Go to Recipes
+        </button>
+      </div>
+
+      <!-- Populated Plan Content -->
+      <div id="plan-content" class="hidden space-y-6">
+
+        <!-- Executive Strategy Banner -->
+        <div class="bg-charcoal text-white rounded-2xl p-5 sm:p-6 shadow-md space-y-4">
+          <div class="flex flex-wrap items-start justify-between gap-4">
+            <div class="space-y-1">
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-bold uppercase tracking-wider text-terracotta-200">Kitchen Game Plan</span>
+                <span class="text-xs text-stone-400">&bull;</span>
+                <span id="plan-serve-badge" class="text-xs font-semibold text-white bg-white/15 px-2.5 py-0.5 rounded-full">Serve at 5:00 PM</span>
+              </div>
+              <h2 id="plan-meal-title" class="text-xl sm:text-2xl font-extrabold">Thanksgiving Dinner</h2>
+              <p id="plan-summary" class="text-sm text-stone-300 max-w-3xl leading-relaxed"></p>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              <div class="bg-white/10 rounded-xl px-3.5 py-2 text-center">
+                <div class="text-[11px] uppercase tracking-wider text-stone-300">Start Cooking</div>
+                <div id="plan-start-time" class="text-base font-mono font-bold text-terracotta-200">--:--</div>
+              </div>
+              <div class="bg-white/10 rounded-xl px-3.5 py-2 text-center">
+                <div class="text-[11px] uppercase tracking-wider text-stone-300">Progress</div>
+                <div id="plan-progress-text" class="text-base font-mono font-bold text-sage-100">0/0</div>
+              </div>
+              <button type="button" onclick="openPrintModal()" class="px-4 py-2.5 rounded-xl bg-terracotta-500 hover:bg-terracotta-600 text-white text-xs sm:text-sm font-bold shadow-sm transition-colors flex items-center gap-2">
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+                </svg>
+                <span>Print Sheet</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Oven Strategy Note -->
+          <div class="rounded-xl bg-white/10 border border-white/10 p-3.5 flex items-start gap-3">
+            <span class="px-2 py-0.5 rounded-md bg-amber-500/25 text-amber-200 text-xs font-bold shrink-0 mt-0.5">Oven Strategy</span>
+            <p id="plan-oven-strategy" class="text-xs sm:text-sm text-stone-200 leading-relaxed"></p>
+          </div>
+        </div>
+
+        <!-- Make-Ahead & Set Aside Section -->
+        <div id="make-ahead-section" class="bg-sage-50 rounded-2xl border border-sage-600/20 p-5 sm:p-6 space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h3 class="text-lg font-bold text-sage-700 flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                </svg>
+                Make-Ahead &amp; Set Aside
+              </h3>
+              <p class="text-xs sm:text-sm text-sage-700/80">Prep these early to free up burners and reduce last-minute rush.</p>
+            </div>
+            <span id="make-ahead-count" class="text-xs font-bold px-2.5 py-1 rounded-full bg-sage-100 text-sage-700">0 items</span>
+          </div>
+          <div id="make-ahead-list" class="grid grid-cols-1 md:grid-cols-2 gap-3.5"></div>
+        </div>
+
+        <!-- Synchronized Cooking Timeline Card -->
+        <div class="bg-white rounded-2xl border border-stone-200/90 shadow-sm p-5 sm:p-6 space-y-5">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h3 class="text-lg font-bold text-charcoal">Synchronized Cooking Timeline</h3>
+              <p class="text-xs sm:text-sm text-stone-500">Check off completed tasks or launch any step's countdown timer when you're ready.</p>
+            </div>
+            <!-- Live Serve Time Adjuster -->
+            <div class="flex flex-wrap items-center gap-2">
+              <div class="flex items-center gap-2 bg-cream px-3 py-1.5 rounded-xl border border-stone-200">
+                <label for="plan-quick-serve-time" class="text-xs font-semibold text-stone-600">Shift Serve Time:</label>
+                <input id="plan-quick-serve-time" type="time" onchange="syncServeTimeFromPlan(this.value)" class="bg-transparent text-xs font-mono font-bold text-terracotta-700 focus:outline-none">
+              </div>
+              <button type="button" onclick="openPrintModal()" class="px-3 py-1.5 rounded-xl border border-stone-300 bg-white hover:bg-stone-50 text-xs font-semibold text-charcoal flex items-center gap-1.5 transition-colors">
+                <svg class="w-3.5 h-3.5 text-stone-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+                </svg>
+                Print
+              </button>
+            </div>
+          </div>
+
+          <!-- Dynamic Station Filter Pills -->
+          <div id="station-filters" class="flex flex-wrap gap-2"></div>
+
+          <!-- Timeline Steps List -->
+          <div id="timeline-list" class="space-y-3"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- TAB 3: LIVE KITCHEN TIMERS & INTERACTIVE STOVETOP SCHEMATIC         -->
+    <!-- =================================================================== -->
+    <section id="view-timers" class="hidden space-y-6">
+
+      <!-- Interactive Live Stove & Oven Visualizer -->
+      <div class="bg-white rounded-2xl border border-stone-200/90 shadow-sm p-5 sm:p-6">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <div>
+            <h2 class="text-lg font-bold text-charcoal">Live Stove &amp; Oven Monitor</h2>
+            <p class="text-xs sm:text-sm text-stone-500">Burners and ovens light up automatically when timers assigned to them are running.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="testChime()" class="px-3 py-2 rounded-xl border border-stone-200 bg-cream hover:bg-parchment text-xs font-semibold text-stone-700 transition-colors">
+              Test Chime
+            </button>
+            <button type="button" onclick="openCustomTimerModal()" class="px-3.5 py-2 rounded-xl bg-charcoal hover:bg-stone-800 text-white text-xs font-semibold transition-colors flex items-center gap-1.5">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+              </svg>
+              Add Custom Timer
+            </button>
+          </div>
+        </div>
+
+        <!-- Visual Schematic: Dynamic Burners + Dynamic Oven(s) -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+          <!-- Stovetop (Dynamic Small / Medium / Large Burners) -->
+          <div class="lg:col-span-7 rounded-2xl bg-stone-900 p-4 sm:p-5 text-white border border-stone-800">
+            <div class="text-[11px] font-bold uppercase tracking-widest text-stone-400 mb-3 flex flex-wrap justify-between gap-1">
+              <span id="stove-burners-title">Stovetop (4 Burners)</span>
+              <span id="stove-burners-subtitle">2 Small &bull; 2 Large</span>
+            </div>
+            <div id="stove-burners-grid" class="grid grid-cols-2 gap-3 sm:gap-4"></div>
+          </div>
+
+          <!-- Dynamic Oven Visualizer(s) -->
+          <div id="stove-ovens-container" class="lg:col-span-5 flex flex-col gap-3"></div>
+        </div>
+      </div>
+
+      <!-- Empty Timers State -->
+      <div id="timers-empty" class="bg-white rounded-2xl border border-stone-200 p-10 text-center space-y-3">
+        <h3 class="text-lg font-bold text-charcoal">No timers queued yet</h3>
+        <p class="text-sm text-stone-500 max-w-md mx-auto">Generate a meal schedule to automatically create timers for every cooking step, or add a custom timer above.</p>
+      </div>
+
+      <!-- Timers Grid -->
+      <div id="timers-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 hidden"></div>
+    </section>
+
+  </main>
+
+  <!-- ===================================================================== -->
+  <!-- STICKY BOTTOM ACTIVE TIMERS DOCK (Visible across all tabs)            -->
+  <!-- ===================================================================== -->
+  <div id="active-timers-dock" class="hidden fixed bottom-0 inset-x-0 z-30 bg-charcoal/95 backdrop-blur text-white border-t border-stone-700 shadow-2xl print:hidden">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-2.5 flex items-center justify-between gap-3">
+      <div class="flex items-center gap-2.5 overflow-x-auto py-1 flex-1" id="dock-timers-list"></div>
+      <button type="button" onclick="switchTab('timers')" class="px-3.5 py-2 rounded-xl bg-terracotta-600 hover:bg-terracotta-500 text-xs font-bold shrink-0 transition-colors">
+        Open Deck
+      </button>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL 1: ADD / EDIT RECIPE                                            -->
+  <!-- ===================================================================== -->
+  <div id="modal-recipe" class="hidden fixed inset-0 z-50 bg-charcoal/60 backdrop-blur-sm flex items-center justify-center p-4 print:hidden">
+    <div class="bg-white rounded-2xl shadow-2xl border border-stone-200 w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
+      <div class="px-6 py-4 border-b border-stone-200 flex items-center justify-between">
+        <h3 id="modal-recipe-title" class="text-lg font-bold text-charcoal">Add Recipe</h3>
+        <button type="button" onclick="closeRecipeModal()" class="p-2 rounded-lg text-stone-400 hover:text-charcoal hover:bg-stone-100">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      <form id="form-recipe" onsubmit="saveRecipeForm(event)" class="p-6 space-y-4 overflow-y-auto">
+        <input type="hidden" id="recipe-edit-id">
+        <div>
+          <label for="recipe-name" class="block text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1.5">Dish Name *</label>
+          <input id="recipe-name" type="text" required placeholder="e.g., Classic Herb-Roasted Turkey" class="w-full rounded-xl border border-stone-300 bg-cream/40 px-3.5 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-terracotta-500">
+        </div>
+        <div>
+          <label for="recipe-ingredients" class="block text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1.5">Ingredients *</label>
+          <textarea id="recipe-ingredients" rows="4" required placeholder="List key ingredients, quantities, and pot/pan sizes if relevant..." class="w-full rounded-xl border border-stone-300 bg-cream/40 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-terracotta-500"></textarea>
+        </div>
+        <div>
+          <label for="recipe-instructions" class="block text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1.5">Cooking Instructions &amp; Times *</label>
+          <textarea id="recipe-instructions" rows="6" required placeholder="Paste or type the cooking steps, oven temperatures, simmering times, and resting times..." class="w-full rounded-xl border border-stone-300 bg-cream/40 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-terracotta-500"></textarea>
+        </div>
+        <div class="pt-2 flex items-center justify-end gap-2.5">
+          <button type="button" onclick="closeRecipeModal()" class="px-4 py-2.5 rounded-xl border border-stone-300 bg-white hover:bg-stone-50 text-sm font-semibold text-stone-700">Cancel</button>
+          <button type="submit" class="px-5 py-2.5 rounded-xl bg-terracotta-600 hover:bg-terracotta-700 text-white text-sm font-bold shadow-sm">Save Recipe</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL 2: ADD CUSTOM TIMER                                             -->
+  <!-- ===================================================================== -->
+  <div id="modal-custom-timer" class="hidden fixed inset-0 z-50 bg-charcoal/60 backdrop-blur-sm flex items-center justify-center p-4 print:hidden">
+    <div class="bg-white rounded-2xl shadow-2xl border border-stone-200 w-full max-w-md overflow-hidden">
+      <div class="px-6 py-4 border-b border-stone-200 flex items-center justify-between">
+        <h3 class="text-lg font-bold text-charcoal">Add Custom Timer</h3>
+        <button type="button" onclick="closeCustomTimerModal()" class="p-2 rounded-lg text-stone-400 hover:text-charcoal hover:bg-stone-100">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      <form id="form-custom-timer" onsubmit="saveCustomTimer(event)" class="p-6 space-y-4">
+        <div>
+          <label for="ct-label" class="block text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1">Timer Label *</label>
+          <input id="ct-label" type="text" required placeholder="e.g., Warm Dinner Rolls" class="w-full rounded-xl border border-stone-300 bg-cream/40 px-3.5 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-terracotta-500">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label for="ct-minutes" class="block text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1">Minutes *</label>
+            <input id="ct-minutes" type="number" min="1" max="600" value="15" required class="w-full rounded-xl border border-stone-300 bg-cream/40 px-3.5 py-2.5 text-sm font-mono font-bold focus:outline-none focus:ring-2 focus:ring-terracotta-500">
+          </div>
+          <div>
+            <label for="ct-station" class="block text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1">Station</label>
+            <select id="ct-station" class="w-full rounded-xl border border-stone-300 bg-cream/40 px-3 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-terracotta-500"></select>
+          </div>
+        </div>
+        <div>
+          <label for="ct-temp" class="block text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1">Temperature / Heat (Optional)</label>
+          <input id="ct-temp" type="text" placeholder="e.g., 350°F or Medium-Low" class="w-full rounded-xl border border-stone-300 bg-cream/40 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-terracotta-500">
+        </div>
+        <div class="pt-2 flex justify-end gap-2">
+          <button type="button" onclick="closeCustomTimerModal()" class="px-4 py-2.5 rounded-xl border border-stone-300 text-sm font-semibold text-stone-700">Cancel</button>
+          <button type="submit" class="px-5 py-2.5 rounded-xl bg-terracotta-600 hover:bg-terracotta-700 text-white text-sm font-bold">Create Timer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL 3: COOKIE STORAGE & BACKUP MANAGER                              -->
+  <!-- ===================================================================== -->
+  <div id="modal-storage" class="hidden fixed inset-0 z-50 bg-charcoal/60 backdrop-blur-sm flex items-center justify-center p-4 print:hidden">
+    <div class="bg-white rounded-2xl shadow-2xl border border-stone-200 w-full max-w-lg overflow-hidden">
+      <div class="px-6 py-4 border-b border-stone-200 flex items-center justify-between">
+        <h3 class="text-lg font-bold text-charcoal">Site Cookie Storage</h3>
+        <button type="button" onclick="closeStorageModal()" class="p-2 rounded-lg text-stone-400 hover:text-charcoal hover:bg-stone-100">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      <div class="p-6 space-y-4">
+        <div id="storage-modal-status" class="rounded-xl bg-sage-50 border border-sage-600/20 p-4 text-sm text-sage-700"></div>
+        <p class="text-xs text-stone-500 leading-relaxed">
+          FeastSync automatically splits your recipes, API settings, and generated schedule into chunked browser cookies (<code class="bg-stone-100 px-1 rounded">document.cookie</code>) with a 30-day expiration—no backend database needed for GitHub Pages.
+        </p>
+
+        <div class="flex flex-wrap gap-2.5 pt-2">
+          <button type="button" onclick="exportBackupJson()" class="flex-1 px-4 py-2.5 rounded-xl border border-stone-300 bg-cream hover:bg-parchment text-xs font-bold text-charcoal transition-colors">
+            Copy JSON Backup
+          </button>
+          <button type="button" onclick="requestClearAllCookies()" class="flex-1 px-4 py-2.5 rounded-xl border border-red-200 bg-red-50 hover:bg-red-100 text-xs font-bold text-red-700 transition-colors">
+            Clear All Cookies
+          </button>
+        </div>
+
+        <!-- Inline Clear Confirmation (Replaces browser confirm()) -->
+        <div id="clear-confirm-box" class="hidden rounded-xl bg-red-50 border border-red-300 p-4 space-y-3">
+          <p class="text-xs font-bold text-red-800">Erase all saved recipes, schedule, timers, and API keys from cookies?</p>
+          <div class="flex justify-end gap-2">
+            <button type="button" onclick="cancelClearAllCookies()" class="px-3 py-1.5 rounded-lg bg-white border border-stone-300 text-xs font-semibold text-stone-700">Keep Data</button>
+            <button type="button" onclick="confirmClearAllCookies()" class="px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs font-bold">Yes, Clear Everything</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL 4: PRINT KITCHEN RUN SHEET OPTIONS                              -->
+  <!-- ===================================================================== -->
+  <div id="modal-print" class="hidden fixed inset-0 z-50 bg-charcoal/60 backdrop-blur-sm flex items-center justify-center p-4 print:hidden">
+    <div class="bg-white rounded-2xl shadow-2xl border border-stone-200 w-full max-w-md overflow-hidden">
+      <div class="px-6 py-4 border-b border-stone-200 flex items-center justify-between">
+        <div>
+          <h3 class="text-lg font-bold text-charcoal">Print Kitchen Sheet</h3>
+          <p class="text-xs text-stone-500">Formatted for clean, ink-friendly paper printing.</p>
+        </div>
+        <button type="button" onclick="closePrintModal()" class="p-2 rounded-lg text-stone-400 hover:text-charcoal hover:bg-stone-100">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      <div class="p-6 space-y-4">
+        <div id="print-modal-summary" class="rounded-xl bg-parchment/70 border border-stone-200 px-3.5 py-2.5 text-xs font-medium text-stone-700"></div>
+
+        <div class="space-y-2.5">
+          <label class="flex items-start gap-3 p-3 rounded-xl border border-stone-200 hover:bg-cream/50 cursor-pointer">
+            <input id="print-opt-makeahead" type="checkbox" checked class="mt-0.5 h-4 w-4 rounded border-stone-300 accent-terracotta-600">
+            <div class="text-xs">
+              <div class="font-bold text-charcoal">Make-Ahead &amp; Set Aside Guide</div>
+              <div class="text-stone-500">Early prep items with storage &amp; reheating instructions.</div>
+            </div>
+          </label>
+
+          <label class="flex items-start gap-3 p-3 rounded-xl border border-stone-200 hover:bg-cream/50 cursor-pointer">
+            <input id="print-opt-timeline" type="checkbox" checked class="mt-0.5 h-4 w-4 rounded border-stone-300 accent-terracotta-600">
+            <div class="text-xs">
+              <div class="font-bold text-charcoal">Synchronized Cooking Timeline</div>
+              <div class="text-stone-500">Chronological steps with clock times, stations, temps, timers &amp; instructions.</div>
+            </div>
+          </label>
+
+          <label class="flex items-start gap-3 p-3 rounded-xl border border-stone-200 hover:bg-cream/50 cursor-pointer">
+            <input id="print-opt-recipes" type="checkbox" checked class="mt-0.5 h-4 w-4 rounded border-stone-300 accent-terracotta-600">
+            <div class="text-xs">
+              <div class="font-bold text-charcoal">Recipe Ingredients &amp; Reference Sheet</div>
+              <div class="text-stone-500">Appends all dish ingredients and full recipe instructions on a clean page.</div>
+            </div>
+          </label>
+
+          <label class="flex items-center gap-3 px-3 py-2 rounded-xl bg-stone-50 border border-stone-200/80 cursor-pointer">
+            <input id="print-opt-blank-checks" type="checkbox" checked class="h-4 w-4 rounded border-stone-300 accent-terracotta-600">
+            <span class="text-xs font-medium text-stone-600">Print empty checkboxes (for checking off on paper)</span>
+          </label>
+        </div>
+
+        <div class="pt-2 flex items-center justify-end gap-2.5">
+          <button type="button" onclick="closePrintModal()" class="px-4 py-2.5 rounded-xl border border-stone-300 bg-white hover:bg-stone-50 text-sm font-semibold text-stone-700">Cancel</button>
+          <button type="button" onclick="executePrint()" class="px-5 py-2.5 rounded-xl bg-terracotta-600 hover:bg-terracotta-700 text-white text-sm font-bold shadow-sm flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+            </svg>
+            Print Now
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL 5: AI & API SETTINGS (AUTO-OPENS ON FIRST VISIT & VIA GEAR)     -->
+  <!-- ===================================================================== -->
+  <div id="modal-ai-settings" class="hidden fixed inset-0 z-50 bg-charcoal/60 backdrop-blur-sm flex items-center justify-center p-4 print:hidden">
+    <div class="bg-white rounded-2xl shadow-2xl border border-stone-200 w-full max-w-xl max-h-[92vh] flex flex-col overflow-hidden">
+      <div class="px-6 py-4 border-b border-stone-200 flex items-start justify-between gap-3">
+        <div>
+          <div class="flex items-center gap-2">
+            <h3 id="ai-modal-title" class="text-lg font-bold text-charcoal">AI &amp; API Settings</h3>
+            <span class="text-[11px] font-semibold text-stone-500 bg-stone-100 px-2 py-0.5 rounded-full">Saved in Cookie</span>
+          </div>
+          <p id="ai-modal-subtitle" class="text-xs text-stone-500 mt-0.5">Connect your Google Gemini or OpenAI key so FeastSync can build your meal timeline.</p>
+        </div>
+        <button type="button" onclick="closeAiSettingsModal()" class="p-2 rounded-lg text-stone-400 hover:text-charcoal hover:bg-stone-100 shrink-0" aria-label="Close API settings">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-5 overflow-y-auto">
+        <!-- Provider Selector -->
+        <div class="space-y-1.5">
+          <span class="block text-xs font-semibold uppercase tracking-wider text-stone-500">Choose AI Provider</span>
+          <div class="grid grid-cols-2 gap-2.5">
+            <button id="provider-btn-gemini" type="button" onclick="selectProvider('gemini')" class="p-3 rounded-xl border-2 border-terracotta-500 bg-terracotta-50/70 text-left transition-all">
+              <div class="flex items-center justify-between gap-1">
+                <span class="text-sm font-bold text-charcoal">Google Gemini</span>
+                <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-sage-100 text-sage-700">Free Tier</span>
+              </div>
+              <div class="text-[11px] text-stone-500 mt-0.5">Live models &bull; Lite first</div>
+            </button>
+            <button id="provider-btn-openai" type="button" onclick="selectProvider('openai')" class="p-3 rounded-xl border-2 border-stone-200 bg-white hover:border-stone-300 text-left transition-all">
+              <div class="text-sm font-bold text-charcoal">OpenAI ChatGPT</div>
+              <div class="text-[11px] text-stone-500 mt-0.5">Live models &bull; Lite first</div>
+            </button>
+          </div>
+        </div>
+
+        <!-- API Key Input -->
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label for="input-api-key" id="label-api-key" class="block text-xs font-semibold uppercase tracking-wider text-stone-500">Gemini API Key</label>
+            <button type="button" onclick="toggleApiKeyVisibility()" id="btn-toggle-key" class="text-xs font-semibold text-terracotta-600 hover:underline">Show</button>
+          </div>
+          <input id="input-api-key" type="password" autocomplete="off" placeholder="Paste your API key to load available models..." class="w-full rounded-xl border border-stone-300 bg-cream/40 px-3.5 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-terracotta-500 focus:border-terracotta-500" oninput="handleApiKeyInput()">
+          <p class="mt-1 text-[11px] text-stone-500">Your key stays strictly in your own browser cookie and is sent only to your chosen AI provider.</p>
+        </div>
+
+        <!-- Dynamic Model Selector -->
+        <div>
+          <div class="flex items-center justify-between mb-1 gap-2">
+            <label for="select-ai-model" class="block text-xs font-semibold uppercase tracking-wider text-stone-500">AI Model (Lite Prioritized)</label>
+            <button id="btn-fetch-models" type="button" onclick="fetchAvailableModels({ silent: false, autoSelectLite: true })" class="text-xs font-semibold text-terracotta-600 hover:text-terracotta-700 hover:underline flex items-center gap-1 disabled:opacity-50">
+              <svg id="icon-fetch-models-spin" class="w-3.5 h-3.5 animate-spin hidden" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+              </svg>
+              <span id="label-fetch-models">Fetch Models</span>
+            </button>
+          </div>
+          <select id="select-ai-model" onchange="handleModelSelectChange()" class="w-full rounded-xl border border-stone-300 bg-cream/40 px-3 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-terracotta-500"></select>
+          <p id="model-fetch-status" class="mt-1.5 text-[11px] text-stone-500 leading-relaxed">
+            Enter your API key to automatically pull live models from your account.
+          </p>
+
+          <!-- Free-Tier Filter & High-Demand Auto-Fallback Toggles -->
+          <div class="mt-3 space-y-2 rounded-xl bg-parchment/60 border border-stone-200/80 p-3">
+            <label id="gemini-free-tier-toggle-wrap" class="flex items-start gap-2.5 cursor-pointer">
+              <input id="chk-free-tier-only" type="checkbox" checked onchange="handleFreeTierToggle()" class="mt-0.5 h-4 w-4 rounded border-stone-300 accent-terracotta-600 shrink-0">
+              <span class="text-xs text-stone-700 leading-snug">
+                <strong class="text-charcoal">Free-tier models only</strong> (Flash-Lite &amp; Flash). Uncheck only if you enabled Google Cloud billing for Pro / Gemini 4 models.
+              </span>
+            </label>
+            <label id="gemini-auto-fallback-wrap" class="flex items-start gap-2.5 cursor-pointer">
+              <input id="chk-auto-fallback" type="checkbox" checked onchange="handleAutoFallbackToggle()" class="mt-0.5 h-4 w-4 rounded border-stone-300 accent-terracotta-600 shrink-0">
+              <span class="text-xs text-stone-700 leading-snug">
+                <strong class="text-charcoal">Auto-switch model on high demand</strong> &mdash; automatically retries other free-tier models if one is temporarily busy.
+              </span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Step-by-Step Guide: How to Get a Free Google Gemini API Key -->
+        <details id="guide-free-gemini" open class="rounded-xl bg-sage-50 border border-sage-600/20 p-4 group">
+          <summary class="cursor-pointer list-none flex items-center justify-between gap-2 text-xs sm:text-sm font-bold text-sage-700">
+            <span class="flex items-center gap-2">
+              <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              How to get a FREE Google Gemini API Key (No credit card required)
+            </span>
+            <svg class="w-4 h-4 shrink-0 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </summary>
+          <ol class="mt-3 space-y-2 text-xs text-stone-700 list-decimal list-inside leading-relaxed">
+            <li>
+              Go to
+              <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" class="font-bold text-terracotta-700 underline hover:text-terracotta-600">Google AI Studio (aistudio.google.com/apikey)</a>
+              and sign in with your regular Google account.
+            </li>
+            <li>Click the blue <strong>&ldquo;Create API key&rdquo;</strong> button (accept the terms of service if it&rsquo;s your first visit, and choose a project if prompted).</li>
+            <li>Click <strong>Copy</strong> next to your new key (it starts with <code class="bg-white px-1 py-0.5 rounded border border-sage-600/20 font-mono text-[11px]">AIza...</code>).</li>
+            <li>Paste the key into the <strong>Gemini API Key</strong> field above &mdash; FeastSync will automatically fetch your available models and select a fast, free-tier <strong>Lite</strong> model!</li>
+          </ol>
+          <div class="mt-3 pt-2.5 border-t border-sage-600/15 flex flex-wrap items-center justify-between gap-2">
+            <span class="text-[11px] text-sage-700/90">Google&rsquo;s free tier is more than enough for holiday meal planning.</span>
+            <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-lg bg-sage-700 hover:bg-sage-600 text-white text-xs font-bold transition-colors inline-flex items-center gap-1.5">
+              Open Google AI Studio
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+              </svg>
+            </a>
+          </div>
+        </details>
+
+        <!-- Compact OpenAI API Key Hint (Shown when OpenAI is selected) -->
+        <div id="guide-openai-note" class="hidden rounded-xl bg-parchment/80 border border-stone-200 p-3.5 text-xs text-stone-700 space-y-1.5">
+          <div class="font-bold text-charcoal">Using OpenAI ChatGPT?</div>
+          <p class="leading-relaxed">
+            Create or copy an API key from
+            <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" class="font-bold text-terracotta-700 underline">platform.openai.com/api-keys</a>
+            (note: OpenAI API requires prepaid billing credits). Prefer a free option? Switch to <strong>Google Gemini</strong> above for step-by-step free key instructions.
+          </p>
+        </div>
+      </div>
+
+      <div class="px-6 py-4 border-t border-stone-200 bg-cream/60 flex flex-wrap items-center justify-between gap-2">
+        <button id="btn-ai-modal-skip" type="button" onclick="closeAiSettingsModal()" class="px-4 py-2.5 rounded-xl border border-stone-300 bg-white hover:bg-stone-50 text-xs sm:text-sm font-semibold text-stone-700">
+          Close
+        </button>
+        <button type="button" onclick="saveAndCloseAiSettingsModal()" class="px-5 py-2.5 rounded-xl bg-terracotta-600 hover:bg-terracotta-700 text-white text-xs sm:text-sm font-bold shadow-sm">
+          Save &amp; Continue
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- TOAST NOTIFICATION CONTAINER (Replaces browser alert())               -->
+  <!-- ===================================================================== -->
+  <div id="toast-container" class="fixed top-20 right-4 z-50 flex flex-col gap-2 max-w-sm pointer-events-none print:hidden"></div>
+
+  <!-- ===================================================================== -->
+  <!-- DEDICATED PRINT-ONLY KITCHEN RUN SHEET                                -->
+  <!-- ===================================================================== -->
+  <section id="print-sheet" class="hidden print:block bg-white text-black w-full text-sm leading-snug"></section>
+
+  <!-- ===================================================================== -->
+  <!-- APPLICATION JAVASCRIPT                                                -->
+  <!-- ===================================================================== -->
+  <script>
+    /**
+     * =========================================================================
+     * 1. CHUNKED COOKIE STORAGE ENGINE (Bypasses 4KB per-cookie browser limit)
+     * =========================================================================
+     */
+    const CookieStore = {
+      MAX_CHUNK_LEN: 3200,
+      EXPIRY_DAYS: 30,
+      cookiesAvailable: true,
+
+      /** Verify whether document.cookie writes succeed (sandboxed previews may block them). */
+      checkAvailability() {
+        try {
+          const testName = "fs_cookie_probe";
+          document.cookie = `${testName}=1; path=/; max-age=60; SameSite=Lax`;
+          const ok = document.cookie.includes(`${testName}=1`);
+          document.cookie = `${testName}=; path=/; max-age=0; SameSite=Lax`;
+          this.cookiesAvailable = ok;
+          return ok;
+        } catch (err) {
+          this.cookiesAvailable = false;
+          return false;
+        }
+      },
+
+      /** Read a single raw cookie by name. */
+      getRaw(name) {
+        try {
+          const pairs = document.cookie ? document.cookie.split("; ") : [];
+          const prefix = name + "=";
+          for (let i = 0; i < pairs.length; i++) {
+            if (pairs[i].startsWith(prefix)) {
+              return pairs[i].substring(prefix.length);
+            }
+          }
+        } catch (err) {
+          console.warn("Cookie read error:", err);
+        }
+        return null;
+      },
+
+      /** Write a single raw cookie with 30-day max-age. */
+      setRaw(name, value) {
+        try {
+          const maxAge = this.EXPIRY_DAYS * 24 * 60 * 60;
+          document.cookie = `${name}=${value}; path=/; max-age=${maxAge}; SameSite=Lax`;
+        } catch (err) {
+          console.warn("Cookie write error:", err);
+        }
+      },
+
+      /** Delete a single cookie immediately. */
+      removeRaw(name) {
+        try {
+          document.cookie = `${name}=; path=/; max-age=0; SameSite=Lax`;
+        } catch (err) {
+          console.warn("Cookie delete error:", err);
+        }
+      },
+
+      /** Serialize any JS object into chunked cookies under `prefix`. */
+      saveJSON(prefix, data) {
+        if (!this.cookiesAvailable) return false;
+        try {
+          const encoded = encodeURIComponent(JSON.stringify(data));
+          const oldCount = parseInt(this.getRaw(`${prefix}_n`) || "0", 10);
+          const chunks = [];
+          for (let i = 0; i < encoded.length; i += this.MAX_CHUNK_LEN) {
+            chunks.push(encoded.slice(i, i + this.MAX_CHUNK_LEN));
+          }
+          chunks.forEach((chunk, idx) => {
+            this.setRaw(`${prefix}_${idx}`, chunk);
+          });
+          this.setRaw(`${prefix}_n`, String(chunks.length));
+          for (let j = chunks.length; j < oldCount; j++) {
+            this.removeRaw(`${prefix}_${j}`);
+          }
+          return true;
+        } catch (err) {
+          console.error("Failed to save chunked cookie:", prefix, err);
+          return false;
+        }
+      },
+
+      /** Reassemble and parse chunked cookies stored under `prefix`. */
+      loadJSON(prefix, fallbackValue) {
+        if (!this.cookiesAvailable) return fallbackValue;
+        try {
+          const count = parseInt(this.getRaw(`${prefix}_n`) || "0", 10);
+          if (!count || count < 1) return fallbackValue;
+          let combined = "";
+          for (let i = 0; i < count; i++) {
+            const part = this.getRaw(`${prefix}_${i}`);
+            if (part === null) return fallbackValue;
+            combined += part;
+          }
+          return JSON.parse(decodeURIComponent(combined));
+        } catch (err) {
+          console.warn("Failed to parse chunked cookie:", prefix, err);
+          return fallbackValue;
+        }
+      },
+
+      /** Delete all FeastSync cookies (`fs_*`). */
+      clearAll() {
+        try {
+          const pairs = document.cookie ? document.cookie.split("; ") : [];
+          pairs.forEach((pair) => {
+            const name = pair.split("=")[0];
+            if (name.startsWith("fs_")) {
+              this.removeRaw(name);
+            }
+          });
+        } catch (err) {
+          console.warn("Cookie clear error:", err);
+        }
+      },
+
+      /** Compute approximate bytes currently stored by FeastSync cookies. */
+      getUsageStats() {
+        try {
+          const pairs = document.cookie ? document.cookie.split("; ") : [];
+          let bytes = 0;
+          let count = 0;
+          pairs.forEach((pair) => {
+            if (pair.startsWith("fs_")) {
+              bytes += pair.length;
+              count++;
+            }
+          });
+          return { bytes, count };
+        } catch (err) {
+          return { bytes: 0, count: 0 };
+        }
+      }
+    };
+
+    /**
+     * =========================================================================
+     * 2. APPLICATION STATE, DYNAMIC STATIONS & MODEL CATALOG
+     * =========================================================================
+     */
+    const DEFAULT_KITCHEN = {
+      ovens: 1,
+      largeBurners: 2,
+      mediumBurners: 0,
+      smallBurners: 2
+    };
+
+    const KITCHEN_LIMITS = {
+      ovens: { min: 0, max: 3 },
+      largeBurners: { min: 0, max: 6 },
+      mediumBurners: { min: 0, max: 6 },
+      smallBurners: { min: 0, max: 6 }
+    };
+
+    // Fallback model lists shown before the user's API key fetches live models.
+    const FALLBACK_MODELS = {
+      gemini: [
+        { id: "gemini-3.5-flash-lite", displayName: "Gemini 3.5 Flash-Lite", isLite: true, isFreeTier: true },
+        { id: "gemini-3.1-flash-lite", displayName: "Gemini 3.1 Flash-Lite", isLite: true, isFreeTier: true },
+        { id: "gemini-2.5-flash-lite", displayName: "Gemini 2.5 Flash-Lite", isLite: true, isFreeTier: true },
+        { id: "gemini-3.8-flash", displayName: "Gemini 3.8 Flash", isLite: false, isFreeTier: true },
+        { id: "gemini-3.6-flash", displayName: "Gemini 3.6 Flash", isLite: false, isFreeTier: true }
+      ],
+      openai: [
+        { id: "gpt-4.1-nano", displayName: "gpt-4.1-nano", isLite: true, isFreeTier: false },
+        { id: "gpt-4o-mini", displayName: "gpt-4o-mini", isLite: true, isFreeTier: false },
+        { id: "gpt-4.1-mini", displayName: "gpt-4.1-mini", isLite: true, isFreeTier: false },
+        { id: "gpt-4o", displayName: "gpt-4o", isLite: false, isFreeTier: false }
+      ]
+    };
+
+    // Runtime cache of live models fetched from provider APIs (kept in memory to keep cookies compact)
+    let runtimeModels = {
+      gemini: [],
+      openai: []
+    };
+    let modelFetchDebounceId = null;
+
+    let state = {
+      activeTab: "setup",
+      stationFilter: "all",
+      config: {
+        mealName: "Thanksgiving Dinner",
+        serveTime: "17:00",
+        provider: "gemini", // 'gemini' | 'openai'
+        geminiModel: "gemini-3.5-flash-lite",
+        openaiModel: "gpt-4.1-nano",
+        geminiApiKey: "",
+        openaiApiKey: "",
+        freeTierOnly: true,
+        autoFallback: true,
+        soundEnabled: true,
+        aiSetupPrompted: false,
+        kitchen: { ...DEFAULT_KITCHEN }
+      },
+      recipes: [],
+      plan: null,
+      completedSteps: {},
+      timers: []
+    };
+
+    let alarmIntervalId = null;
+    let tickIntervalId = null;
+
+    function clampInt(val, min, max, fallback) {
+      const n = parseInt(val, 10);
+      if (Number.isNaN(n)) return fallback;
+      return Math.min(max, Math.max(min, n));
+    }
+
+    /** Return sanitized kitchen hardware counts. */
+    function getKitchenConfig() {
+      const k = state.config.kitchen || DEFAULT_KITCHEN;
+      return {
+        ovens: clampInt(k.ovens, KITCHEN_LIMITS.ovens.min, KITCHEN_LIMITS.ovens.max, DEFAULT_KITCHEN.ovens),
+        largeBurners: clampInt(k.largeBurners, KITCHEN_LIMITS.largeBurners.min, KITCHEN_LIMITS.largeBurners.max, DEFAULT_KITCHEN.largeBurners),
+        mediumBurners: clampInt(k.mediumBurners, KITCHEN_LIMITS.mediumBurners.min, KITCHEN_LIMITS.mediumBurners.max, DEFAULT_KITCHEN.mediumBurners),
+        smallBurners: clampInt(k.smallBurners, KITCHEN_LIMITS.smallBurners.min, KITCHEN_LIMITS.smallBurners.max, DEFAULT_KITCHEN.smallBurners)
+      };
+    }
+
+    /** Dynamically construct all active station definitions from the user's kitchen settings. */
+    function getStationsMap() {
+      const k = getKitchenConfig();
+      const map = {};
+
+      for (let i = 1; i <= k.ovens; i++) {
+        const id = `oven_${i}`;
+        const label = k.ovens === 1 ? "Main Oven" : `Oven ${i}`;
+        const short = k.ovens === 1 ? "Oven" : `Oven ${i}`;
+        map[id] = { id, label, short, group: "oven", badge: "bg-amber-100 text-amber-800 border-amber-200" };
+      }
+      for (let i = 1; i <= k.largeBurners; i++) {
+        const id = `large_burner_${i}`;
+        map[id] = { id, label: `Large Burner ${i}`, short: `Large ${i}`, group: "large_burner", badge: "bg-orange-100 text-orange-800 border-orange-200" };
+      }
+      for (let i = 1; i <= k.mediumBurners; i++) {
+        const id = `medium_burner_${i}`;
+        map[id] = { id, label: `Medium Burner ${i}`, short: `Med ${i}`, group: "medium_burner", badge: "bg-sky-100 text-sky-800 border-sky-200" };
+      }
+      for (let i = 1; i <= k.smallBurners; i++) {
+        const id = `small_burner_${i}`;
+        map[id] = { id, label: `Small Burner ${i}`, short: `Small ${i}`, group: "small_burner", badge: "bg-teal-100 text-teal-800 border-teal-200" };
+      }
+
+      map.prep_counter = {
+        id: "prep_counter",
+        label: "Prep / Rest",
+        short: "Prep Counter",
+        group: "prep_counter",
+        badge: "bg-indigo-100 text-indigo-800 border-indigo-200"
+      };
+      return map;
+    }
+
+    /** Normalize legacy or out-of-range station IDs safely. */
+    function normalizeStationId(rawId) {
+      const stations = getStationsMap();
+      if (rawId === "oven" && stations.oven_1) return "oven_1";
+      if (rawId && stations[rawId]) return rawId;
+      return "prep_counter";
+    }
+
+    /** Get display metadata for any station ID (gracefully handles legacy IDs). */
+    function getStationMeta(rawId) {
+      const stations = getStationsMap();
+      if (rawId === "oven" && stations.oven_1) return stations.oven_1;
+      if (rawId && stations[rawId]) return stations[rawId];
+      if (rawId && rawId.startsWith("oven")) {
+        return { id: rawId, label: "Oven", short: "Oven", group: "oven", badge: "bg-amber-100 text-amber-800 border-amber-200" };
+      }
+      if (rawId && rawId.startsWith("large_burner")) {
+        return { id: rawId, label: rawId.replace(/_/g, " "), short: "Large", group: "large_burner", badge: "bg-orange-100 text-orange-800 border-orange-200" };
+      }
+      if (rawId && rawId.startsWith("medium_burner")) {
+        return { id: rawId, label: rawId.replace(/_/g, " "), short: "Medium", group: "medium_burner", badge: "bg-sky-100 text-sky-800 border-sky-200" };
+      }
+      if (rawId && rawId.startsWith("small_burner")) {
+        return { id: rawId, label: rawId.replace(/_/g, " "), short: "Small", group: "small_burner", badge: "bg-teal-100 text-teal-800 border-teal-200" };
+      }
+      return stations.prep_counter;
+    }
+
+    /** Get the currently active provider's API key. */
+    function getActiveApiKey() {
+      return state.config.provider === "gemini"
+        ? (state.config.geminiApiKey || "").trim()
+        : (state.config.openaiApiKey || "").trim();
+    }
+
+    /** Get the currently selected model ID for the active provider. */
+    function getActiveModel() {
+      return state.config.provider === "gemini"
+        ? (state.config.geminiModel || FALLBACK_MODELS.gemini[0].id)
+        : (state.config.openaiModel || FALLBACK_MODELS.openai[0].id);
+    }
+
+    /** Build a concise human-readable hardware summary (e.g., "2 Ovens • 2 Large • 1 Medium • 2 Small Burners"). */
+    function formatKitchenSummaryText() {
+      const k = getKitchenConfig();
+      const parts = [];
+      parts.push(`${k.ovens} ${k.ovens === 1 ? "Oven" : "Ovens"}`);
+      if (k.largeBurners > 0) parts.push(`${k.largeBurners} Large`);
+      if (k.mediumBurners > 0) parts.push(`${k.mediumBurners} Medium`);
+      if (k.smallBurners > 0) parts.push(`${k.smallBurners} Small`);
+      const totalBurners = k.largeBurners + k.mediumBurners + k.smallBurners;
+      if (totalBurners === 0) {
+        parts.push("No Stovetop");
+      } else {
+        parts[parts.length - 1] += totalBurners === 1 ? " Burner" : " Burners";
+      }
+      return parts.join(" • ");
+    }
+
+    /**
+     * =========================================================================
+     * 3. SAMPLE THANKSGIVING RECIPES (For Instant Testing)
+     * =========================================================================
+     */
+    const SAMPLE_THANKSGIVING_RECIPES = [
+      {
+        id: "rec-turkey",
+        name: "Herb-Roasted Turkey (14 lb)",
+        ingredients: "14 lb turkey (thawed), 1/2 cup softened butter, fresh rosemary, thyme, sage, 1 lemon, 1 onion, 2 cups chicken broth, salt & pepper.",
+        instructions: "Pat turkey dry and rub with herb butter. Place onion and lemon in cavity, add broth to roasting pan. Preheat oven to 325°F. Roast loosely covered with foil for 2 hours 30 minutes, then uncover and roast 45 minutes until breast reaches 165°F. Remove from oven and rest tented with foil for at least 40 minutes before carving."
+      },
+      {
+        id: "rec-mash",
+        name: "Garlic Yukon Gold Mashed Potatoes",
+        ingredients: "5 lbs Yukon Gold potatoes (peeled & cubed), 4 cloves garlic, 1 cup warm heavy cream, 6 tbsp butter, salt & chives.",
+        instructions: "Place potatoes and garlic in a large stockpot, cover with salted cold water, bring to a boil on a large burner, and simmer 20 minutes until fork-tender. Drain well, return to warm pot on low heat for 2 minutes to dry, mash with butter and warm cream. Keep warm covered up to 30 minutes."
+      },
+      {
+        id: "rec-stuffing",
+        name: "Sage & Sausage Baked Stuffing",
+        ingredients: "12 cups cubed sourdough bread (dried overnight), 1 lb breakfast sausage, 1 onion, 3 celery stalks, 3 cups chicken broth, 2 eggs, fresh sage, 4 tbsp butter.",
+        instructions: "Brown sausage in a large skillet (10 mins). Sauté onion and celery in butter until soft (8 mins). Toss bread cubes with sausage, veggies, broth, and eggs in a greased 9x13 baking dish. Can be assembled ahead and refrigerated. Bake covered at 350°F for 30 minutes, then uncovered for 15 minutes until golden."
+      },
+      {
+        id: "rec-cranberry",
+        name: "Orange-Spiced Cranberry Sauce",
+        ingredients: "12 oz fresh cranberries, 1 cup sugar, 1 cup orange juice, 1 tbsp orange zest, 1 cinnamon stick.",
+        instructions: "Combine all ingredients in a medium saucepan on a small burner. Bring to a boil, then reduce heat and simmer 15 minutes until cranberries burst and sauce thickens. Cool completely; sauce thickens further as it chills. Ideal to make 1-2 days ahead."
+      },
+      {
+        id: "rec-gravy",
+        name: "Pan Dripping Turkey Gravy",
+        ingredients: "2 cups turkey pan drippings (fat separated), 1/4 cup butter or turkey fat, 1/4 cup all-purpose flour, 2 cups chicken stock, fresh thyme, black pepper.",
+        instructions: "Once turkey is resting, whisk flour and fat in a saucepan over medium heat for 2 minutes until golden. Slowly whisk in drippings and stock. Simmer on a small burner for 10 minutes until glossy and thickened. Serve hot."
+      }
+    ];
+
+    /**
+     * =========================================================================
+     * 4. INITIALIZATION & STATE PERSISTENCE
+     * =========================================================================
+     */
+    function initApp() {
+      CookieStore.checkAvailability();
+
+      const savedConfig = CookieStore.loadJSON("fs_cfg", null);
+      if (savedConfig) {
+        state.config = {
+          ...state.config,
+          ...savedConfig,
+          kitchen: { ...DEFAULT_KITCHEN, ...(savedConfig.kitchen || {}) }
+        };
+        if (savedConfig.apiKey && !savedConfig.geminiApiKey && !savedConfig.openaiApiKey) {
+          if (state.config.provider === "openai") {
+            state.config.openaiApiKey = savedConfig.apiKey;
+          } else {
+            state.config.geminiApiKey = savedConfig.apiKey;
+          }
+        }
+      }
+
+      const savedRecipes = CookieStore.loadJSON("fs_rec", null);
+      if (Array.isArray(savedRecipes)) {
+        state.recipes = savedRecipes;
+      }
+
+      const savedPlanData = CookieStore.loadJSON("fs_plan", null);
+      if (savedPlanData && savedPlanData.plan) {
+        state.plan = savedPlanData.plan;
+        state.completedSteps = savedPlanData.completedSteps || {};
+      }
+
+      const savedTimers = CookieStore.loadJSON("fs_tmr", null);
+      if (Array.isArray(savedTimers)) {
+        const now = Date.now();
+        state.timers = savedTimers.map((t) => {
+          if (t.status === "running" && t.endTimestamp) {
+            const left = Math.max(0, Math.round((t.endTimestamp - now) / 1000));
+            return {
+              ...t,
+              remainingSeconds: left,
+              status: left === 0 ? "ringing" : "running"
+            };
+          }
+          return t;
+        });
+      }
+
+      syncConfigInputs();
+      renderKitchenConfigUI();
+      renderModelSelectOptions();
+      renderRecipes();
+      renderStationFilters();
+      renderPlan();
+      renderTimers();
+      renderActiveTimersDock();
+      renderAlarmBanner();
+      updateCookieStatusBadge();
+      updateSoundIcons();
+      updateAiStatusIndicator();
+
+      if (getActiveApiKey()) {
+        fetchAvailableModels({ silent: true, autoSelectLite: false });
+      } else if (!state.config.aiSetupPrompted) {
+        // First time opening FeastSync with no API key saved -> prompt user for their key
+        openAiSettingsModal(true);
+      }
+
+      if (tickIntervalId) clearInterval(tickIntervalId);
+      tickIntervalId = setInterval(tickTimers, 1000);
+    }
+
+    function persistConfig() {
+      CookieStore.saveJSON("fs_cfg", state.config);
+      updateCookieStatusBadge();
+    }
+
+    function persistRecipes() {
+      CookieStore.saveJSON("fs_rec", state.recipes);
+      updateCookieStatusBadge();
+    }
+
+    function persistPlan() {
+      CookieStore.saveJSON("fs_plan", {
+        plan: state.plan,
+        completedSteps: state.completedSteps
+      });
+      updateCookieStatusBadge();
+    }
+
+    function persistTimers() {
+      CookieStore.saveJSON("fs_tmr", state.timers);
+      updateCookieStatusBadge();
+    }
+
+    function updateCookieStatusBadge() {
+      const dot = document.getElementById("cookie-dot");
+      const label = document.getElementById("cookie-status-label");
+      if (!dot || !label) return;
+      if (!CookieStore.cookiesAvailable) {
+        dot.className = "w-2 h-2 rounded-full bg-amber-500";
+        label.textContent = "Preview Mode";
+        return;
+      }
+      const stats = CookieStore.getUsageStats();
+      const kb = (stats.bytes / 1024).toFixed(1);
+      dot.className = "w-2 h-2 rounded-full bg-sage-600";
+      label.textContent = `Cookies (${kb} KB)`;
+    }
+
+    /**
+     * =========================================================================
+     * 5. NAVIGATION & UI HELPERS
+     * =========================================================================
+     */
+    function switchTab(tabName) {
+      state.activeTab = tabName;
+      ["setup", "plan", "timers"].forEach((t) => {
+        const view = document.getElementById(`view-${t}`);
+        const btn = document.getElementById(`tab-btn-${t}`);
+        if (t === tabName) {
+          view.classList.remove("hidden");
+          btn.classList.add("bg-white", "text-terracotta-700", "shadow-sm");
+          btn.classList.remove("text-stone-600");
+        } else {
+          view.classList.add("hidden");
+          btn.classList.remove("bg-white", "text-terracotta-700", "shadow-sm");
+          btn.classList.add("text-stone-600");
+        }
+      });
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function showToast(message, type = "info") {
+      const container = document.getElementById("toast-container");
+      const el = document.createElement("div");
+      const palette = {
+        info: "bg-charcoal text-white border-stone-700",
+        success: "bg-sage-700 text-white border-sage-600",
+        error: "bg-red-700 text-white border-red-600"
+      }[type] || "bg-charcoal text-white border-stone-700";
+
+      el.className = `pointer-events-auto px-4 py-3 rounded-xl border shadow-lg text-xs sm:text-sm font-semibold flex items-center gap-2 transition-all duration-300 ${palette}`;
+      el.textContent = message;
+      container.appendChild(el);
+
+      setTimeout(() => {
+        el.classList.add("opacity-0", "translate-x-4");
+        setTimeout(() => el.remove(), 300);
+      }, 3400);
+    }
+
+    function escapeHtml(str) {
+      return String(str || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    /**
+     * =========================================================================
+     * 6. CONFIGURATION, KITCHEN HARDWARE, LIVE MODELS & RECIPE MANAGEMENT
+     * =========================================================================
+     */
+    function syncConfigInputs() {
+      document.getElementById("input-meal-name").value = state.config.mealName || "";
+      document.getElementById("input-serve-time").value = state.config.serveTime || "17:00";
+      document.getElementById("input-api-key").value = getActiveApiKey();
+      const chkFree = document.getElementById("chk-free-tier-only");
+      if (chkFree) chkFree.checked = state.config.freeTierOnly !== false;
+      const chkFallback = document.getElementById("chk-auto-fallback");
+      if (chkFallback) chkFallback.checked = state.config.autoFallback !== false;
+      updateProviderButtonsUI();
+      renderModelSelectOptions();
+      updateAiStatusIndicator();
+    }
+
+    function adjustKitchenHardware(field, delta) {
+      const limits = KITCHEN_LIMITS[field];
+      if (!limits) return;
+      const k = getKitchenConfig();
+      const next = clampInt(k[field] + delta, limits.min, limits.max, k[field]);
+      if (next === k[field]) return;
+      state.config.kitchen = { ...k, [field]: next };
+      persistConfig();
+      renderKitchenConfigUI();
+      renderStationFilters();
+      renderTimers();
+    }
+
+    function resetKitchenDefaults() {
+      state.config.kitchen = { ...DEFAULT_KITCHEN };
+      persistConfig();
+      renderKitchenConfigUI();
+      renderStationFilters();
+      renderTimers();
+      showToast("Kitchen reset to 1 Oven, 2 Large & 2 Small Burners", "info");
+    }
+
+    function renderKitchenConfigUI() {
+      const k = getKitchenConfig();
+      const summary = formatKitchenSummaryText();
+      document.getElementById("cfg-ovens-val").textContent = k.ovens;
+      document.getElementById("cfg-large-val").textContent = k.largeBurners;
+      document.getElementById("cfg-medium-val").textContent = k.mediumBurners;
+      document.getElementById("cfg-small-val").textContent = k.smallBurners;
+      document.getElementById("header-kitchen-summary").textContent = summary;
+
+      const ctaSummary = document.getElementById("cta-kitchen-summary");
+      if (ctaSummary) {
+        ctaSummary.textContent = `AI will identify make-ahead items, balance your ${summary}, and generate start-ready timers for every timed step.`;
+      }
+      populateCustomTimerStations();
+    }
+
+    function populateCustomTimerStations() {
+      const select = document.getElementById("ct-station");
+      if (!select) return;
+      const current = select.value;
+      const stations = Object.values(getStationsMap());
+      select.innerHTML = stations.map((st) => (
+        `<option value="${st.id}">${escapeHtml(st.label)}</option>`
+      )).join("");
+      if (current && stations.some((s) => s.id === current)) {
+        select.value = current;
+      }
+    }
+
+    function selectProvider(provider) {
+      state.config.provider = provider;
+      document.getElementById("input-api-key").value = getActiveApiKey();
+      updateProviderButtonsUI();
+      renderModelSelectOptions();
+      updateAiStatusIndicator();
+      persistConfig();
+
+      if (getActiveApiKey() && runtimeModels[provider].length === 0) {
+        fetchAvailableModels({ silent: true, autoSelectLite: false });
+      }
+    }
+
+    function updateProviderButtonsUI() {
+      const isGemini = state.config.provider === "gemini";
+      const btnG = document.getElementById("provider-btn-gemini");
+      const btnO = document.getElementById("provider-btn-openai");
+      const keyLabel = document.getElementById("label-api-key");
+      const geminiGuide = document.getElementById("guide-free-gemini");
+      const openaiNote = document.getElementById("guide-openai-note");
+      const freeTierWrap = document.getElementById("gemini-free-tier-toggle-wrap");
+      const fallbackWrap = document.getElementById("gemini-auto-fallback-wrap");
+
+      if (isGemini) {
+        btnG.className = "p-3 rounded-xl border-2 border-terracotta-500 bg-terracotta-50/70 text-left transition-all";
+        btnO.className = "p-3 rounded-xl border-2 border-stone-200 bg-white hover:border-stone-300 text-left transition-all";
+        keyLabel.textContent = "Gemini API Key";
+        if (geminiGuide) geminiGuide.classList.remove("hidden");
+        if (openaiNote) openaiNote.classList.add("hidden");
+        if (freeTierWrap) freeTierWrap.classList.remove("hidden");
+        if (fallbackWrap) fallbackWrap.classList.remove("hidden");
+      } else {
+        btnO.className = "p-3 rounded-xl border-2 border-terracotta-500 bg-terracotta-50/70 text-left transition-all";
+        btnG.className = "p-3 rounded-xl border-2 border-stone-200 bg-white hover:border-stone-300 text-left transition-all";
+        keyLabel.textContent = "OpenAI API Key";
+        if (geminiGuide) geminiGuide.classList.add("hidden");
+        if (openaiNote) openaiNote.classList.remove("hidden");
+        if (freeTierWrap) freeTierWrap.classList.add("hidden");
+        if (fallbackWrap) fallbackWrap.classList.add("hidden");
+      }
+    }
+
+    function handleFreeTierToggle() {
+      const chk = document.getElementById("chk-free-tier-only");
+      state.config.freeTierOnly = Boolean(chk && chk.checked);
+      persistConfig();
+      renderModelSelectOptions();
+      updateAiStatusIndicator();
+    }
+
+    function handleAutoFallbackToggle() {
+      const chk = document.getElementById("chk-auto-fallback");
+      state.config.autoFallback = Boolean(chk && chk.checked);
+      persistConfig();
+    }
+
+    function toggleApiKeyVisibility() {
+      const input = document.getElementById("input-api-key");
+      const btn = document.getElementById("btn-toggle-key");
+      if (input.type === "password") {
+        input.type = "text";
+        btn.textContent = "Hide";
+      } else {
+        input.type = "password";
+        btn.textContent = "Show";
+      }
+    }
+
+    function handleApiKeyInput() {
+      const val = document.getElementById("input-api-key").value.trim();
+      if (state.config.provider === "gemini") {
+        state.config.geminiApiKey = val;
+      } else {
+        state.config.openaiApiKey = val;
+      }
+      updateAiStatusIndicator();
+      persistConfig();
+
+      if (modelFetchDebounceId) clearTimeout(modelFetchDebounceId);
+      if (val.length >= 20) {
+        modelFetchDebounceId = setTimeout(() => {
+          fetchAvailableModels({ silent: true, autoSelectLite: true });
+        }, 650);
+      }
+    }
+
+    function handleModelSelectChange() {
+      const selected = document.getElementById("select-ai-model").value;
+      if (!selected) return;
+      if (state.config.provider === "gemini") {
+        state.config.geminiModel = selected;
+      } else {
+        state.config.openaiModel = selected;
+      }
+      updateAiStatusIndicator();
+      persistConfig();
+    }
+
+    function handleConfigChange() {
+      state.config.mealName = document.getElementById("input-meal-name").value.trim() || "Big Meal";
+      state.config.serveTime = document.getElementById("input-serve-time").value || "17:00";
+      persistConfig();
+      if (state.plan) {
+        renderPlan();
+      }
+    }
+
+    function syncServeTimeFromPlan(newTime) {
+      if (!newTime) return;
+      state.config.serveTime = newTime;
+      document.getElementById("input-serve-time").value = newTime;
+      persistConfig();
+      renderPlan();
+      showToast(`Schedule shifted to serve at ${formatClockTime(parseServeTimeMinutes(newTime))}`, "info");
+    }
+
+    /** Extract numeric version (e.g., 3.1, 2.5, 4.1) from a model ID for smart sorting. */
+    function extractModelVersion(id) {
+      const match = String(id).match(/(?:gemini|gpt|o)-?(\d+(?:\.\d+)?)/i);
+      return match ? parseFloat(match[1]) : 0;
+    }
+
+    /** Determine whether a model belongs to the fast/economical "Lite" tier. */
+    function isLiteModel(provider, id) {
+      const lower = String(id).toLowerCase();
+      if (provider === "gemini") {
+        return lower.includes("lite");
+      }
+      return lower.includes("nano") || lower.includes("mini") || lower.includes("lite");
+    }
+
+    /**
+     * Identify whether a Gemini model is eligible for Google AI Studio's Free Tier.
+     * Google's /models endpoint returns all catalog models regardless of billing status,
+     * so we exclude paid-only Gemini 4, Pro, Omni, Image, Video, TTS, and agent models.
+     */
+    function isLikelyFreeTierGeminiModel(id) {
+      const lower = String(id).toLowerCase();
+      if (!lower.startsWith("gemini-")) return false;
+      // Paid-only or specialized families
+      if (/(gemini-4|-pro\b|pro-|nano-banana|omni|deep-research|antigravity|decision|customtools|transcribe|translate|tts|audio|image|imagen|veo|lyria|live|robotics|computer-use|embedding|aqa|vision)/.test(lower)) {
+        return false;
+      }
+      // Deprecated 1.x / 2.0 or restricted 2.5-flash (2.5-flash-lite remains active on free tier)
+      if (/^gemini-(1\.|2\.0)/.test(lower)) return false;
+      if (lower === "gemini-2.5-flash" || lower.startsWith("gemini-2.5-flash-preview") || lower.startsWith("gemini-2.5-flash-00")) {
+        return false;
+      }
+      // Free-tier text models are Flash-Lite and Flash
+      return lower.includes("flash");
+    }
+
+    /**
+     * Compute priority score so stable Free-Tier Lite models always appear first,
+     * followed by stable Flash models, then Preview/Exp models, then Paid/Pro models.
+     * Lower score = higher priority.
+     */
+    function scoreModelPriority(provider, id) {
+      const lower = String(id).toLowerCase();
+      const ver = extractModelVersion(lower);
+      const isDated = /-\d{4}-\d{2}-\d{2}|-\d{3}$/.test(lower) ? 1 : 0;
+      const isPreview = lower.includes("preview") ? 1 : 0;
+      const isExp = lower.includes("exp") ? 1 : 0;
+
+      if (provider === "gemini") {
+        const freeEligible = isLikelyFreeTierGeminiModel(lower);
+        let tier = 5;
+        if (freeEligible && lower.includes("lite") && !isPreview && !isExp) tier = 0;      // Priority 1: Stable GA Flash-Lite (best free quota & availability)
+        else if (freeEligible && lower.includes("flash") && !lower.includes("lite") && !isPreview && !isExp) tier = 1; // Priority 2: Stable GA Flash
+        else if (freeEligible && lower.includes("lite")) tier = 2;                          // Priority 3: Preview Flash-Lite
+        else if (freeEligible) tier = 3;                                                    // Priority 4: Preview Flash
+        else if (lower.includes("pro") || lower.startsWith("gemini-4")) tier = 4;           // Priority 5: Paid-tier Pro / Gemini 4
+        return tier * 1000 - ver * 10 + isPreview * 5 + isDated * 2 + isExp * 3;
+      } else {
+        let tier = 4;
+        if (lower.includes("nano") || lower.includes("lite")) tier = 0; // Priority 1: nano / lite
+        else if (lower.includes("mini")) tier = 1;                      // Priority 2: mini
+        else if (/^gpt-\d/.test(lower)) tier = 2;                       // Priority 3: standard GPT
+        else if (/^o\d/.test(lower)) tier = 3;                          // Priority 4: reasoning models
+        return tier * 1000 - ver * 10 + isDated * 2 + isExp;
+      }
+    }
+
+    /** Return the list of models visible in the dropdown (applying Gemini free-tier filter when enabled). */
+    function getFilteredModelsForProvider(provider) {
+      const isLive = runtimeModels[provider].length > 0;
+      const baseList = isLive ? [...runtimeModels[provider]] : [...FALLBACK_MODELS[provider]];
+      if (provider === "gemini" && state.config.freeTierOnly !== false) {
+        const freeOnly = baseList.filter((m) => m.isFreeTier !== false && isLikelyFreeTierGeminiModel(m.id));
+        if (freeOnly.length > 0) return freeOnly;
+      }
+      return baseList;
+    }
+
+    /**
+     * Fetch live available models from Google Gemini or OpenAI using the user's API key,
+     * filter out non-text models, and sort with stable Free-Tier Lite models prioritized first.
+     */
+    async function fetchAvailableModels({ silent = false, autoSelectLite = true } = {}) {
+      const provider = state.config.provider;
+      const apiKey = getActiveApiKey();
+      const statusEl = document.getElementById("model-fetch-status");
+      const btn = document.getElementById("btn-fetch-models");
+      const spin = document.getElementById("icon-fetch-models-spin");
+      const btnLabel = document.getElementById("label-fetch-models");
+
+      if (!apiKey) {
+        statusEl.className = "mt-1.5 text-[11px] text-amber-700 font-medium leading-relaxed";
+        statusEl.textContent = `Enter your ${provider === "gemini" ? "Gemini" : "OpenAI"} API key above first, then click Fetch Models.`;
+        if (!silent) {
+          showToast(`Enter your ${provider === "gemini" ? "Gemini" : "OpenAI"} API key first.`, "error");
+        }
+        return;
+      }
+
+      btn.disabled = true;
+      spin.classList.remove("hidden");
+      btnLabel.textContent = "Loading...";
+      statusEl.className = "mt-1.5 text-[11px] text-stone-500 leading-relaxed";
+      statusEl.textContent = `Fetching available ${provider === "gemini" ? "Gemini" : "OpenAI"} models...`;
+
+      try {
+        let models = [];
+
+        if (provider === "gemini") {
+          let rawList = [];
+          let pageToken = "";
+          let pageCount = 0;
+
+          // Fetch with large pageSize (and follow pagination up to 3 pages) so newer models aren't missed
+          do {
+            const pageParam = pageToken ? `&pageToken=${encodeURIComponent(pageToken)}` : "";
+            const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey)}&pageSize=200${pageParam}`;
+            const data = await fetchWithBackoff(url, { method: "GET" }, 2);
+            if (Array.isArray(data.models)) {
+              rawList = rawList.concat(data.models);
+            }
+            pageToken = data.nextPageToken || "";
+            pageCount++;
+          } while (pageToken && pageCount < 3);
+
+          models = rawList
+            .filter((m) => {
+              const methods = m.supportedGenerationMethods || [];
+              if (!methods.includes("generateContent")) return false;
+              const id = (m.name || "").replace(/^models\//, "").toLowerCase();
+              if (!id.startsWith("gemini-")) return false;
+              if (/(embedding|imagen|veo|lyria|tts|audio|image|robotics|computer-use|aqa|vision|live|nano-banana|omni|transcribe|translate|decision|deep-research|antigravity|customtools)/.test(id)) return false;
+              if (/^gemini-1\./.test(id)) return false;
+              return true;
+            })
+            .map((m) => {
+              const id = (m.name || "").replace(/^models\//, "");
+              return {
+                id,
+                displayName: m.displayName || id,
+                isLite: isLiteModel("gemini", id),
+                isFreeTier: isLikelyFreeTierGeminiModel(id)
+              };
+            });
+        } else {
+          const data = await fetchWithBackoff("https://api.openai.com/v1/models", {
+            method: "GET",
+            headers: { "Authorization": `Bearer ${apiKey}` }
+          }, 2);
+          const rawList = Array.isArray(data.data) ? data.data : [];
+
+          models = rawList
+            .filter((m) => {
+              const id = (m.id || "").toLowerCase();
+              if (!/^(gpt-|o1|o3|o4|chatgpt-)/.test(id)) return false;
+              if (/(realtime|audio|tts|whisper|dall-e|embedding|moderation|transcribe|image|search|instruct|codex|preview-2024-10|diarize)/.test(id)) return false;
+              return true;
+            })
+            .map((m) => ({
+              id: m.id,
+              displayName: m.id,
+              isLite: isLiteModel("openai", m.id),
+              isFreeTier: false
+            }));
+        }
+
+        if (models.length === 0) {
+          throw new Error("No compatible text generation models were returned for this API key.");
+        }
+
+        // Deduplicate & sort with stable Free-Tier Lite models prioritized at the top
+        const seen = new Set();
+        models = models
+          .filter((m) => {
+            if (seen.has(m.id)) return false;
+            seen.add(m.id);
+            return true;
+          })
+          .sort((a, b) => scoreModelPriority(provider, a.id) - scoreModelPriority(provider, b.id));
+
+        runtimeModels[provider] = models;
+
+        const visibleModels = getFilteredModelsForProvider(provider);
+        const currentSelected = getActiveModel();
+        const existsInVisible = visibleModels.some((m) => m.id === currentSelected);
+
+        if (autoSelectLite || !existsInVisible) {
+          const topModel = visibleModels[0].id;
+          if (provider === "gemini") {
+            state.config.geminiModel = topModel;
+          } else {
+            state.config.openaiModel = topModel;
+          }
+          persistConfig();
+        }
+
+        renderModelSelectOptions();
+        updateAiStatusIndicator();
+
+        const hiddenPaidCount = provider === "gemini" ? Math.max(0, models.length - visibleModels.length) : 0;
+        const liteCount = visibleModels.filter((m) => m.isLite).length;
+        statusEl.className = "mt-1.5 text-[11px] text-sage-700 font-medium leading-relaxed";
+        statusEl.textContent = provider === "gemini" && hiddenPaidCount > 0
+          ? `Showing ${visibleModels.length} free-tier models (${liteCount} lite first; ${hiddenPaidCount} paid-only models hidden). Selected: ${getActiveModel()}`
+          : `Loaded ${visibleModels.length} live models (${liteCount} lite prioritized first). Selected: ${getActiveModel()}`;
+
+        if (!silent) {
+          showToast(`Loaded ${visibleModels.length} models — prioritized ${visibleModels[0].id}`, "success");
+        }
+      } catch (err) {
+        console.warn("Model fetch failed:", err);
+        statusEl.className = "mt-1.5 text-[11px] text-red-600 font-medium leading-relaxed";
+        statusEl.textContent = `Could not fetch live models (${err.message || "Check API key"}). Using default list.`;
+        renderModelSelectOptions();
+        if (!silent) {
+          showToast(`Failed to fetch models: ${err.message || "Verify your API key."}`, "error");
+        }
+      } finally {
+        btn.disabled = false;
+        spin.classList.add("hidden");
+        btnLabel.textContent = "Fetch Models";
+      }
+    }
+
+    /** Render the unified model selector dropdown with Free-Tier & Lite models clearly tagged first. */
+    function renderModelSelectOptions() {
+      const provider = state.config.provider;
+      const select = document.getElementById("select-ai-model");
+      const statusEl = document.getElementById("model-fetch-status");
+      if (!select) return;
+
+      const isLive = runtimeModels[provider].length > 0;
+      const list = getFilteredModelsForProvider(provider);
+      let selectedId = getActiveModel();
+
+      // If free-tier filter is active and the previously saved Gemini model is paid-only, switch to top free-tier model
+      if (provider === "gemini" && state.config.freeTierOnly !== false && !list.some((m) => m.id === selectedId)) {
+        selectedId = list[0].id;
+        state.config.geminiModel = selectedId;
+        persistConfig();
+      } else if (selectedId && !list.some((m) => m.id === selectedId)) {
+        list.unshift({
+          id: selectedId,
+          displayName: selectedId,
+          isLite: isLiteModel(provider, selectedId),
+          isFreeTier: provider === "gemini" ? isLikelyFreeTierGeminiModel(selectedId) : false
+        });
+      }
+
+      select.innerHTML = list.map((m, idx) => {
+        let tag = "";
+        if (provider === "gemini") {
+          if (m.isFreeTier === false) {
+            tag = " [Paid Tier]";
+          } else if (m.isLite) {
+            tag = idx === 0 ? " ★ Free Lite (Recommended)" : " [Free Lite]";
+          } else {
+            tag = " [Free Tier]";
+          }
+        } else if (m.isLite) {
+          tag = idx === 0 ? " ★ Lite (Recommended)" : " [Lite]";
+        }
+        const label = m.displayName && m.displayName !== m.id
+          ? `${m.id} — ${m.displayName}${tag}`
+          : `${m.id}${tag}`;
+        return `<option value="${escapeHtml(m.id)}">${escapeHtml(label)}</option>`;
+      }).join("");
+
+      select.value = selectedId;
+
+      if (statusEl) {
+        if (isLive && provider === "gemini") {
+          const totalLive = runtimeModels.gemini.length;
+          const hiddenPaid = Math.max(0, totalLive - list.length);
+          statusEl.className = "mt-1.5 text-[11px] text-sage-700 font-medium leading-relaxed";
+          statusEl.textContent = hiddenPaid > 0
+            ? `Showing ${list.length} free-tier models (${hiddenPaid} paid-only models hidden). Selected: ${selectedId}`
+            : `Showing all ${list.length} live Gemini models (includes paid-tier models). Selected: ${selectedId}`;
+        } else if (!isLive) {
+          statusEl.className = "mt-1.5 text-[11px] text-stone-500 leading-relaxed";
+          statusEl.textContent = getActiveApiKey()
+            ? `Click "Fetch Models" to load live ${provider === "gemini" ? "Gemini" : "OpenAI"} models (free-tier lite prioritized).`
+            : `Paste your API key to auto-fetch live models. Stored locally in your browser cookie.`;
+        }
+      }
+    }
+
+    function loadSampleThanksgiving() {
+      state.recipes = SAMPLE_THANKSGIVING_RECIPES.map((r) => ({ ...r }));
+      state.config.mealName = "Thanksgiving Dinner";
+      state.config.serveTime = "17:00";
+      syncConfigInputs();
+      persistConfig();
+      persistRecipes();
+      renderRecipes();
+      showToast("Loaded 5 Thanksgiving recipes!", "success");
+    }
+
+    function openRecipeModal(recipeId = null) {
+      const modal = document.getElementById("modal-recipe");
+      const title = document.getElementById("modal-recipe-title");
+      document.getElementById("recipe-edit-id").value = recipeId || "";
+
+      if (recipeId) {
+        const existing = state.recipes.find((r) => r.id === recipeId);
+        if (existing) {
+          title.textContent = "Edit Recipe";
+          document.getElementById("recipe-name").value = existing.name;
+          document.getElementById("recipe-ingredients").value = existing.ingredients;
+          document.getElementById("recipe-instructions").value = existing.instructions;
+        }
+      } else {
+        title.textContent = "Add Recipe";
+        document.getElementById("form-recipe").reset();
+      }
+      modal.classList.remove("hidden");
+    }
+
+    function closeRecipeModal() {
+      document.getElementById("modal-recipe").classList.add("hidden");
+    }
+
+    function saveRecipeForm(e) {
+      e.preventDefault();
+      const editId = document.getElementById("recipe-edit-id").value;
+      const name = document.getElementById("recipe-name").value.trim();
+      const ingredients = document.getElementById("recipe-ingredients").value.trim();
+      const instructions = document.getElementById("recipe-instructions").value.trim();
+
+      if (!name || !ingredients || !instructions) return;
+
+      if (editId) {
+        state.recipes = state.recipes.map((r) =>
+          r.id === editId ? { ...r, name, ingredients, instructions } : r
+        );
+        showToast(`Updated "${name}"`, "success");
+      } else {
+        state.recipes.push({
+          id: "rec-" + Date.now() + "-" + Math.floor(Math.random() * 1000),
+          name,
+          ingredients,
+          instructions
+        });
+        showToast(`Added "${name}"`, "success");
+      }
+
+      persistRecipes();
+      renderRecipes();
+      closeRecipeModal();
+    }
+
+    function deleteRecipe(recipeId) {
+      const target = state.recipes.find((r) => r.id === recipeId);
+      state.recipes = state.recipes.filter((r) => r.id !== recipeId);
+      persistRecipes();
+      renderRecipes();
+      if (target) showToast(`Removed "${target.name}"`, "info");
+    }
+
+    function renderRecipes() {
+      const countEl = document.getElementById("recipe-count");
+      const emptyEl = document.getElementById("recipes-empty");
+      const gridEl = document.getElementById("recipes-grid");
+
+      countEl.textContent = state.recipes.length;
+
+      if (state.recipes.length === 0) {
+        emptyEl.classList.remove("hidden");
+        gridEl.classList.add("hidden");
+        gridEl.innerHTML = "";
+        return;
+      }
+
+      emptyEl.classList.add("hidden");
+      gridEl.classList.remove("hidden");
+
+      gridEl.innerHTML = state.recipes.map((r) => `
+        <article class="rounded-2xl border border-stone-200 bg-cream/40 hover:border-stone-300 p-4 flex flex-col justify-between gap-3 transition-all">
+          <div class="space-y-2">
+            <div class="flex items-start justify-between gap-2">
+              <h3 class="font-bold text-charcoal text-base leading-snug">${escapeHtml(r.name)}</h3>
+              <div class="flex items-center gap-1 shrink-0">
+                <button type="button" onclick="openRecipeModal('${r.id}')" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-stone-600 hover:bg-white hover:text-charcoal border border-transparent hover:border-stone-200 transition-colors">Edit</button>
+                <button type="button" onclick="deleteRecipe('${r.id}')" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-red-600 hover:bg-red-50 transition-colors">Delete</button>
+              </div>
+            </div>
+            <div>
+              <span class="text-[11px] font-bold uppercase tracking-wider text-stone-400">Ingredients</span>
+              <p class="text-xs text-stone-600 line-clamp-2 mt-0.5">${escapeHtml(r.ingredients)}</p>
+            </div>
+            <div>
+              <span class="text-[11px] font-bold uppercase tracking-wider text-stone-400">Instructions</span>
+              <p class="text-xs text-stone-600 line-clamp-3 mt-0.5">${escapeHtml(r.instructions)}</p>
+            </div>
+          </div>
+        </article>
+      `).join("");
+    }
+
+    /**
+     * =========================================================================
+     * 7. AI SCHEDULE GENERATION (GEMINI & OPENAI WITH EXPONENTIAL BACKOFF)
+     * =========================================================================
+     */
+    function buildKitchenConstraintsForPrompt() {
+      const k = getKitchenConfig();
+      const stations = getStationsMap();
+      const lines = [];
+
+      if (k.ovens === 0) {
+        lines.push(`1. ZERO (0) ovens available. Do NOT schedule any oven baking or roasting; adapt all steps to stovetop or prep_counter.`);
+      } else if (k.ovens === 1) {
+        lines.push(`1. Exactly ONE (1) single oven ("oven_1"). Never schedule two dishes at incompatible oven temperatures simultaneously. Stage oven baking, use resting periods (e.g., while a roast rests for 30-45 mins, bake casseroles/stuffing/rolls!), or note when dishes can share the same oven temperature.`);
+      } else {
+        const ovenIds = Array.from({ length: k.ovens }, (_, i) => `"oven_${i + 1}"`).join(", ");
+        lines.push(`1. Exactly ${k.ovens} independent ovens (${ovenIds}). You may run different temperatures in separate ovens simultaneously, while never exceeding ${k.ovens} oven(s) in use at the same time.`);
+      }
+
+      const burnerDetails = [];
+      if (k.largeBurners > 0) {
+        const ids = Array.from({ length: k.largeBurners }, (_, i) => `"large_burner_${i + 1}"`).join(", ");
+        burnerDetails.push(`   - ${k.largeBurners} LARGE burner(s): ${ids} (for stockpots, boiling potatoes, large skillets, Dutch ovens).`);
+      }
+      if (k.mediumBurners > 0) {
+        const ids = Array.from({ length: k.mediumBurners }, (_, i) => `"medium_burner_${i + 1}"`).join(", ");
+        burnerDetails.push(`   - ${k.mediumBurners} MEDIUM burner(s): ${ids} (for everyday sauté pans, medium pots, steaming).`);
+      }
+      if (k.smallBurners > 0) {
+        const ids = Array.from({ length: k.smallBurners }, (_, i) => `"small_burner_${i + 1}"`).join(", ");
+        burnerDetails.push(`   - ${k.smallBurners} SMALL burner(s): ${ids} (for saucepans, gravy, cranberry sauce, melting butter, simmering).`);
+      }
+
+      if (burnerDetails.length === 0) {
+        lines.push(`2. ZERO (0) stovetop burners available. Do NOT schedule any stovetop burner steps.`);
+      } else {
+        lines.push(`2. Stovetop burner configuration:\n${burnerDetails.join("\n")}`);
+      }
+
+      lines.push(`3. Never double-book the same burner or oven station at overlapping times.`);
+      lines.push(`4. Use "prep_counter" for chopping, mixing, assembling, resting, carving, or plating tasks.`);
+      lines.push(`5. Allowed station IDs ONLY: ${Object.keys(stations).join(", ")}.`);
+
+      return lines.join("\n");
+    }
+
+    function buildSystemPrompt() {
+      return `You are an expert executive chef and kitchen logistics orchestrator specializing in large multi-dish meals (like Thanksgiving or holiday feasts).
+
+CRITICAL HARDWARE CONSTRAINTS — YOU MUST STRICTLY OBEY THESE:
+${buildKitchenConstraintsForPrompt()}
+
+MAKE-AHEAD IDENTIFICATION:
+- Explicitly identify every dish or component that can be made ahead of time (hours or 1-2 days before) and set aside. Explain how to store it and when/how to reheat or bring it to serving temperature.
+- Also include a brief reheating/serving step in the main timeline for make-ahead items if they need warming before dinner.
+
+TIMING & TIMERS:
+- Every timeline step MUST include "offsetMinutesBeforeServe" (an integer representing how many minutes BEFORE serving time that step begins; e.g., 240 = 4 hours before dinner, 0 = serve time).
+- Sort "timelineSteps" chronologically from largest "offsetMinutesBeforeServe" down to 0.
+- Set "needsTimer": true and provide a clear "timerLabel" and accurate "durationMinutes" for EVERY cooking, baking, simmering, boiling, sautéing, roasting, or resting step that benefits from a kitchen countdown timer.
+
+Return ONLY valid JSON matching the requested schema.`;
+    }
+
+    function buildUserPrompt() {
+      const recipeBlock = state.recipes.map((r, idx) => (
+        `RECIPE ${idx + 1}: ${r.name}\nIngredients:\n${r.ingredients}\nInstructions:\n${r.instructions}`
+      )).join("\n\n---\n\n");
+
+      const stationIds = Object.keys(getStationsMap()).join(", ");
+
+      return `Meal Occasion: ${state.config.mealName}
+Target Serving Time: ${state.config.serveTime}
+Kitchen Equipment: ${formatKitchenSummaryText()} (station IDs: ${stationIds}).
+
+Here are all the recipes to coordinate:
+
+${recipeBlock}
+
+Produce a complete, conflict-free make-ahead guide and chronological cooking timeline with timer durations so everything finishes hot and ready at serving time.`;
+    }
+
+    /** Fetch helper with exponential backoff (1s, 2s, 4s) for transient throttling/errors. */
+    async function fetchWithBackoff(url, options, maxRetries = 3) {
+      let attempt = 0;
+      while (attempt <= maxRetries) {
+        try {
+          const response = await fetch(url, options);
+          if (response.ok) {
+            return await response.json();
+          }
+          if ((response.status === 429 || response.status >= 500) && attempt < maxRetries) {
+            const delayMs = Math.pow(2, attempt) * 1000;
+            await new Promise((res) => setTimeout(res, delayMs));
+            attempt++;
+            continue;
+          }
+          let errMsg = `HTTP ${response.status}`;
+          try {
+            const errJson = await response.json();
+            errMsg = errJson?.error?.message || errMsg;
+          } catch (_) {}
+          const apiErr = new Error(errMsg);
+          apiErr.status = response.status;
+          throw apiErr;
+        } catch (err) {
+          if (attempt < maxRetries && err.name === "TypeError") {
+            const delayMs = Math.pow(2, attempt) * 1000;
+            await new Promise((res) => setTimeout(res, delayMs));
+            attempt++;
+            continue;
+          }
+          throw err;
+        }
+      }
+      throw new Error("Request failed after retries.");
+    }
+
+    /** Check whether a Gemini error is caused by temporary high demand, quota, or model access limits. */
+    function isRetryableGeminiModelError(err) {
+      const msg = String(err?.message || "").toLowerCase();
+      // Never fallback across models if the API key itself is invalid
+      if (/(api key not valid|api_key_invalid|invalid api key|unauthenticated)/.test(msg)) {
+        return false;
+      }
+      if (err?.status === 503 || err?.status === 429 || err?.status === 404 || err?.status === 403) {
+        return true;
+      }
+      return /(high demand|overloaded|unavailable|resource_exhausted|quota|rate limit|not found|not supported|billing|free tier)/.test(msg);
+    }
+
+    /** Build an ordered list of Gemini models to attempt (selected model first, then free-tier backups). */
+    function buildGeminiCandidateModels() {
+      const primary = getActiveModel();
+      if (state.config.autoFallback === false) {
+        return [primary];
+      }
+      const candidates = [primary];
+      const pool = [
+        ...getFilteredModelsForProvider("gemini"),
+        ...FALLBACK_MODELS.gemini
+      ];
+      for (const m of pool) {
+        if (!m || !m.id || candidates.includes(m.id)) continue;
+        // Only auto-fallback to free-tier eligible models when free-tier mode is on
+        if (state.config.freeTierOnly !== false && !isLikelyFreeTierGeminiModel(m.id)) continue;
+        candidates.push(m.id);
+        if (candidates.length >= 5) break;
+      }
+      return candidates;
+    }
+
+    /** Call Google Gemini API with automatic fallback to sibling free-tier models if one has high demand. */
+    async function callGeminiAPI() {
+      const apiKey = getActiveApiKey();
+      const stationEnum = Object.keys(getStationsMap());
+      const candidates = buildGeminiCandidateModels();
+      const primaryModel = candidates[0];
+      const labelEl = document.getElementById("btn-generate-label");
+
+      const payload = {
+        systemInstruction: {
+          parts: [{ text: buildSystemPrompt() }]
+        },
+        contents: [
+          {
+            role: "user",
+            parts: [{ text: buildUserPrompt() }]
+          }
+        ],
+        generationConfig: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: "OBJECT",
+            properties: {
+              mealSummary: { type: "STRING" },
+              ovenStrategy: { type: "STRING" },
+              makeAheadItems: {
+                type: "ARRAY",
+                items: {
+                  type: "OBJECT",
+                  properties: {
+                    id: { type: "STRING" },
+                    dish: { type: "STRING" },
+                    whenToMake: { type: "STRING" },
+                    durationMinutes: { type: "INTEGER" },
+                    station: {
+                      type: "STRING",
+                      enum: stationEnum
+                    },
+                    instructions: { type: "STRING" },
+                    storageAndReheat: { type: "STRING" }
+                  },
+                  required: ["id", "dish", "whenToMake", "durationMinutes", "station", "instructions", "storageAndReheat"]
+                }
+              },
+              timelineSteps: {
+                type: "ARRAY",
+                items: {
+                  type: "OBJECT",
+                  properties: {
+                    id: { type: "STRING" },
+                    offsetMinutesBeforeServe: { type: "INTEGER" },
+                    phase: { type: "STRING" },
+                    dish: { type: "STRING" },
+                    title: { type: "STRING" },
+                    instructions: { type: "STRING" },
+                    durationMinutes: { type: "INTEGER" },
+                    needsTimer: { type: "BOOLEAN" },
+                    timerLabel: { type: "STRING" },
+                    station: {
+                      type: "STRING",
+                      enum: stationEnum
+                    },
+                    temperature: { type: "STRING" },
+                    tips: { type: "STRING" }
+                  },
+                  required: ["id", "offsetMinutesBeforeServe", "phase", "dish", "title", "instructions", "durationMinutes", "needsTimer", "station"]
+                }
+              }
+            },
+            required: ["mealSummary", "ovenStrategy", "makeAheadItems", "timelineSteps"]
+          }
+        }
+      };
+
+      let lastErr = null;
+      const attempted = [];
+
+      for (let i = 0; i < candidates.length; i++) {
+        const modelId = candidates[i];
+        attempted.push(modelId);
+        if (i > 0 && labelEl) {
+          labelEl.textContent = `Busy — trying ${modelId}...`;
+        }
+
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelId)}:generateContent?key=${encodeURIComponent(apiKey)}`;
+        // Use fewer per-model retries when fallback models are queued so recovery is fast
+        const retriesForThisModel = candidates.length > 1 ? 1 : 3;
+
+        try {
+          const result = await fetchWithBackoff(apiUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          }, retriesForThisModel);
+
+          const rawText = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (!rawText) {
+            throw new Error(`Gemini (${modelId}) returned an empty response.`);
+          }
+
+          return {
+            data: JSON.parse(rawText),
+            modelUsed: modelId,
+            fellBackFrom: i > 0 ? primaryModel : null
+          };
+        } catch (err) {
+          lastErr = err;
+          const canTryNext = i < candidates.length - 1 && isRetryableGeminiModelError(err);
+          if (!canTryNext) {
+            break;
+          }
+          console.warn(`Gemini model ${modelId} unavailable (${err.message}); falling back to ${candidates[i + 1]}`);
+        }
+      }
+
+      if (attempted.length > 1) {
+        throw new Error(`Google's free-tier servers are currently experiencing high demand across ${attempted.join(", ")}. Please wait 30 seconds and try again, or switch models in the top-right gear menu. (Last error: ${lastErr?.message || "Overloaded"})`);
+      }
+      throw lastErr || new Error("Unable to generate schedule with Gemini.");
+    }
+
+    /** Call OpenAI ChatGPT API (`chat/completions`) using the dynamically selected model. */
+    async function callOpenAIAPI() {
+      const apiKey = getActiveApiKey();
+      const modelId = getActiveModel();
+      if (!apiKey) {
+        throw new Error("Please enter your OpenAI API key before generating with ChatGPT.");
+      }
+
+      const stationPipeList = Object.keys(getStationsMap()).join(" | ");
+      const jsonSchemaInstruction = `
+Output strictly a single JSON object with this exact shape:
+{
+  "mealSummary": "string",
+  "ovenStrategy": "string",
+  "makeAheadItems": [
+    {
+      "id": "ma-1",
+      "dish": "string",
+      "whenToMake": "string (e.g. 1-2 days ahead)",
+      "durationMinutes": 20,
+      "station": "${stationPipeList}",
+      "instructions": "string",
+      "storageAndReheat": "string"
+    }
+  ],
+  "timelineSteps": [
+    {
+      "id": "step-1",
+      "offsetMinutesBeforeServe": 240,
+      "phase": "string (e.g. Early Prep, Roasting, Final Push, Serving)",
+      "dish": "string",
+      "title": "string",
+      "instructions": "string",
+      "durationMinutes": 30,
+      "needsTimer": true,
+      "timerLabel": "string",
+      "station": "${stationPipeList}",
+      "temperature": "string (e.g. 325°F or Medium-Low or empty string)",
+      "tips": "string"
+    }
+  ]
+}`;
+
+      const payload = {
+        model: modelId,
+        response_format: { type: "json_object" },
+        messages: [
+          { role: "system", content: buildSystemPrompt() + "\n\n" + jsonSchemaInstruction },
+          { role: "user", content: buildUserPrompt() }
+        ]
+      };
+
+      // Reasoning and GPT-5 series models reject custom temperature values
+      if (!/^(o1|o3|o4|gpt-5)/i.test(modelId)) {
+        payload.temperature = 0.3;
+      }
+
+      const result = await fetchWithBackoff("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${apiKey}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const rawText = result?.choices?.[0]?.message?.content;
+      if (!rawText) {
+        throw new Error(`OpenAI (${modelId}) returned an empty response. Please check your API key and model access.`);
+      }
+      return JSON.parse(rawText);
+    }
+
+    /** Orchestrate AI request, validate output, create timers, and save to cookies. */
+    async function generateCookingPlan() {
+      const errorBox = document.getElementById("generate-error");
+      const errorText = document.getElementById("generate-error-text");
+      errorBox.classList.add("hidden");
+
+      if (state.recipes.length === 0) {
+        errorText.textContent = "Please add at least one recipe (or load the Sample Thanksgiving Menu) before generating a schedule.";
+        errorBox.classList.remove("hidden");
+        return;
+      }
+
+      if (!getActiveApiKey()) {
+        const providerName = state.config.provider === "gemini" ? "Gemini" : "OpenAI";
+        errorText.textContent = `Please enter your ${providerName} API key in the top-right gear menu first.`;
+        errorBox.classList.remove("hidden");
+        openAiSettingsModal(false);
+        return;
+      }
+
+      setGeneratingUI(true);
+
+      try {
+        let rawPlan;
+        let fallbackNotice = "";
+
+        if (state.config.provider === "gemini") {
+          const geminiRes = await callGeminiAPI();
+          rawPlan = geminiRes.data;
+          if (geminiRes.fellBackFrom) {
+            fallbackNotice = ` (auto-switched to ${geminiRes.modelUsed} because ${geminiRes.fellBackFrom} was busy)`;
+          }
+        } else {
+          rawPlan = await callOpenAIAPI();
+        }
+
+        const steps = Array.isArray(rawPlan.timelineSteps) ? rawPlan.timelineSteps : [];
+        steps.sort((a, b) => (b.offsetMinutesBeforeServe || 0) - (a.offsetMinutesBeforeServe || 0));
+
+        const normalizedSteps = steps.map((s, idx) => ({
+          id: s.id || `step-${idx + 1}`,
+          offsetMinutesBeforeServe: Math.max(0, parseInt(s.offsetMinutesBeforeServe, 10) || 0),
+          phase: s.phase || "Cooking",
+          dish: s.dish || "Dish",
+          title: s.title || "Cooking step",
+          instructions: s.instructions || "",
+          durationMinutes: Math.max(0, parseInt(s.durationMinutes, 10) || 0),
+          needsTimer: Boolean(s.needsTimer) && (parseInt(s.durationMinutes, 10) || 0) > 0,
+          timerLabel: s.timerLabel || s.title || s.dish,
+          station: normalizeStationId(s.station),
+          temperature: s.temperature || "",
+          tips: s.tips || ""
+        }));
+
+        const makeAhead = (Array.isArray(rawPlan.makeAheadItems) ? rawPlan.makeAheadItems : []).map((m, idx) => ({
+          id: m.id || `ma-${idx + 1}`,
+          dish: m.dish || "Prep Item",
+          whenToMake: m.whenToMake || "Ahead of time",
+          durationMinutes: Math.max(0, parseInt(m.durationMinutes, 10) || 0),
+          station: normalizeStationId(m.station),
+          instructions: m.instructions || "",
+          storageAndReheat: m.storageAndReheat || ""
+        }));
+
+        state.plan = {
+          mealSummary: rawPlan.mealSummary || "Synchronized kitchen schedule ready.",
+          ovenStrategy: rawPlan.ovenStrategy || "Oven steps are staged for conflict-free cooking.",
+          makeAheadItems: makeAhead,
+          timelineSteps: normalizedSteps,
+          generatedAt: new Date().toISOString()
+        };
+        state.completedSteps = {};
+
+        const existingCustomTimers = state.timers.filter((t) => t.isCustom);
+        const generatedTimers = [];
+
+        makeAhead.forEach((m) => {
+          if (m.durationMinutes > 0) {
+            generatedTimers.push({
+              id: `tmr-${m.id}`,
+              stepId: m.id,
+              label: `${m.dish} (Make-Ahead)`,
+              dish: m.dish,
+              station: m.station,
+              temperature: "",
+              totalSeconds: m.durationMinutes * 60,
+              remainingSeconds: m.durationMinutes * 60,
+              status: "idle",
+              endTimestamp: null,
+              isCustom: false,
+              isMakeAhead: true
+            });
+          }
+        });
+
+        normalizedSteps.forEach((s) => {
+          if (s.needsTimer && s.durationMinutes > 0) {
+            generatedTimers.push({
+              id: `tmr-${s.id}`,
+              stepId: s.id,
+              label: s.timerLabel,
+              dish: s.dish,
+              station: s.station,
+              temperature: s.temperature,
+              offsetMinutesBeforeServe: s.offsetMinutesBeforeServe,
+              totalSeconds: s.durationMinutes * 60,
+              remainingSeconds: s.durationMinutes * 60,
+              status: "idle",
+              endTimestamp: null,
+              isCustom: false,
+              isMakeAhead: false
+            });
+          }
+        });
+
+        state.timers = [...generatedTimers, ...existingCustomTimers];
+
+        persistPlan();
+        persistTimers();
+        renderStationFilters();
+        renderPlan();
+        renderTimers();
+        switchTab("plan");
+        showToast(`Schedule created with ${generatedTimers.length} cooking timers!${fallbackNotice}`, "success");
+      } catch (err) {
+        console.error("Schedule generation failed:", err);
+        const keyHint = !getActiveApiKey() ? " Click the gear icon in the top right to enter your API key." : "";
+        errorText.textContent = (err.message || "An unexpected error occurred while contacting the AI provider.") + keyHint;
+        errorBox.classList.remove("hidden");
+      } finally {
+        setGeneratingUI(false);
+      }
+    }
+
+    function setGeneratingUI(isLoading) {
+      const btn = document.getElementById("btn-generate");
+      const sparkle = document.getElementById("icon-generate-sparkle");
+      const spinner = document.getElementById("icon-generate-spinner");
+      const label = document.getElementById("btn-generate-label");
+      btn.disabled = isLoading;
+      if (isLoading) {
+        sparkle.classList.add("hidden");
+        spinner.classList.remove("hidden");
+        label.textContent = "Orchestrating Burners & Ovens...";
+      } else {
+        sparkle.classList.remove("hidden");
+        spinner.classList.add("hidden");
+        label.textContent = "Generate Schedule & Timers";
+      }
+    }
+
+    /**
+     * =========================================================================
+     * 8. TIME FORMATTING & SCHEDULE RENDERING
+     * =========================================================================
+     */
+    function parseServeTimeMinutes(hhmm) {
+      const [h, m] = (hhmm || "17:00").split(":").map((n) => parseInt(n, 10) || 0);
+      return h * 60 + m;
+    }
+
+    /** Convert total minutes since midnight (wrapping around 24h) into 12-hour clock string. */
+    function formatClockTime(totalMinutes) {
+      const wrapped = ((totalMinutes % 1440) + 1440) % 1440;
+      const hours24 = Math.floor(wrapped / 60);
+      const mins = wrapped % 60;
+      const period = hours24 >= 12 ? "PM" : "AM";
+      const hours12 = hours24 % 12 === 0 ? 12 : hours24 % 12;
+      return `${hours12}:${String(mins).padStart(2, "0")} ${period}`;
+    }
+
+    /** Format an offset like 195 minutes into "T-3h 15m" or "Serve Time". */
+    function formatOffsetLabel(offsetMins) {
+      if (!offsetMins || offsetMins <= 0) return "Serve Time";
+      const h = Math.floor(offsetMins / 60);
+      const m = offsetMins % 60;
+      if (h > 0 && m > 0) return `T-${h}h ${m}m`;
+      if (h > 0) return `T-${h}h`;
+      return `T-${m}m`;
+    }
+
+    /** Format countdown seconds into HH:MM:SS or MM:SS. */
+    function formatDurationMMSS(totalSeconds) {
+      const sec = Math.max(0, Math.floor(totalSeconds || 0));
+      const h = Math.floor(sec / 3600);
+      const m = Math.floor((sec % 3600) / 60);
+      const s = sec % 60;
+      if (h > 0) {
+        return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+      }
+      return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+    }
+
+    function renderStationFilters() {
+      const container = document.getElementById("station-filters");
+      if (!container) return;
+      const k = getKitchenConfig();
+      const filters = [{ key: "all", label: "All Stations" }];
+
+      if (k.ovens > 0) {
+        filters.push({ key: "oven", label: k.ovens === 1 ? "Oven" : `Ovens (${k.ovens})` });
+      }
+      if (k.largeBurners > 0) {
+        filters.push({ key: "large_burner", label: `Large Burners (${k.largeBurners})` });
+      }
+      if (k.mediumBurners > 0) {
+        filters.push({ key: "medium_burner", label: `Medium Burners (${k.mediumBurners})` });
+      }
+      if (k.smallBurners > 0) {
+        filters.push({ key: "small_burner", label: `Small Burners (${k.smallBurners})` });
+      }
+      filters.push({ key: "prep_counter", label: "Prep / Rest" });
+
+      if (!filters.some((f) => f.key === state.stationFilter)) {
+        state.stationFilter = "all";
+      }
+
+      container.innerHTML = filters.map((f) => {
+        const active = f.key === state.stationFilter;
+        const cls = active
+          ? "px-3 py-1.5 rounded-full text-xs font-semibold bg-charcoal text-white transition-colors"
+          : "px-3 py-1.5 rounded-full text-xs font-semibold bg-stone-100 text-stone-700 hover:bg-stone-200 transition-colors";
+        return `<button type="button" onclick="setStationFilter('${f.key}')" data-filter="${f.key}" class="${cls}">${escapeHtml(f.label)}</button>`;
+      }).join("");
+    }
+
+    function setStationFilter(filterKey) {
+      state.stationFilter = filterKey;
+      renderStationFilters();
+      renderTimelineSteps();
+    }
+
+    function toggleStepComplete(stepId) {
+      state.completedSteps[stepId] = !state.completedSteps[stepId];
+      persistPlan();
+      renderPlanProgress();
+      renderTimelineSteps();
+    }
+
+    function renderPlanProgress() {
+      if (!state.plan) return;
+      const total = state.plan.timelineSteps.length;
+      const done = state.plan.timelineSteps.filter((s) => state.completedSteps[s.id]).length;
+      document.getElementById("plan-progress-text").textContent = `${done}/${total}`;
+    }
+
+    function renderPlan() {
+      const emptyEl = document.getElementById("plan-empty");
+      const contentEl = document.getElementById("plan-content");
+      const planBadge = document.getElementById("badge-plan-count");
+
+      if (!state.plan) {
+        emptyEl.classList.remove("hidden");
+        contentEl.classList.add("hidden");
+        planBadge.classList.add("hidden");
+        return;
+      }
+
+      emptyEl.classList.add("hidden");
+      contentEl.classList.remove("hidden");
+      planBadge.classList.remove("hidden");
+      planBadge.textContent = state.plan.timelineSteps.length;
+
+      const serveMins = parseServeTimeMinutes(state.config.serveTime);
+      const maxOffset = state.plan.timelineSteps.reduce(
+        (max, s) => Math.max(max, s.offsetMinutesBeforeServe || 0),
+        0
+      );
+
+      document.getElementById("plan-meal-title").textContent = state.config.mealName || "Big Meal";
+      document.getElementById("plan-serve-badge").textContent = `Serve at ${formatClockTime(serveMins)}`;
+      document.getElementById("plan-quick-serve-time").value = state.config.serveTime || "17:00";
+      document.getElementById("plan-start-time").textContent = formatClockTime(serveMins - maxOffset);
+      document.getElementById("plan-summary").textContent = state.plan.mealSummary;
+      document.getElementById("plan-oven-strategy").textContent = state.plan.ovenStrategy;
+      renderPlanProgress();
+
+      const maSection = document.getElementById("make-ahead-section");
+      const maList = document.getElementById("make-ahead-list");
+      const maCount = document.getElementById("make-ahead-count");
+      const makeAheadItems = state.plan.makeAheadItems || [];
+
+      if (makeAheadItems.length === 0) {
+        maSection.classList.add("hidden");
+      } else {
+        maSection.classList.remove("hidden");
+        maCount.textContent = `${makeAheadItems.length} ${makeAheadItems.length === 1 ? "item" : "items"}`;
+        maList.innerHTML = makeAheadItems.map((item) => {
+          const st = getStationMeta(item.station);
+          const linkedTimer = state.timers.find((t) => t.stepId === item.id);
+          return `
+            <div class="bg-white rounded-xl border border-sage-600/20 p-4 flex flex-col justify-between gap-3 shadow-sm">
+              <div class="space-y-1.5">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                  <span class="font-bold text-charcoal text-sm">${escapeHtml(item.dish)}</span>
+                  <span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-sage-100 text-sage-700">${escapeHtml(item.whenToMake)}</span>
+                </div>
+                <p class="text-xs text-stone-600 leading-relaxed">${escapeHtml(item.instructions)}</p>
+                <p class="text-xs text-sage-700 bg-sage-50 rounded-lg px-2.5 py-1.5 font-medium">
+                  <span class="font-bold">Store &amp; Reheat:</span> ${escapeHtml(item.storageAndReheat)}
+                </p>
+              </div>
+              <div class="flex items-center justify-between pt-2 border-t border-stone-100">
+                <span class="text-[11px] font-semibold px-2 py-0.5 rounded-md border ${st.badge}">${escapeHtml(st.short)}</span>
+                ${linkedTimer ? renderInlineTimerButton(linkedTimer) : ""}
+              </div>
+            </div>
+          `;
+        }).join("");
+      }
+
+      renderTimelineSteps();
+    }
+
+    function renderInlineTimerButton(timer) {
+      if (timer.status === "running") {
+        return `
+          <button type="button" onclick="toggleTimer('${timer.id}')" class="px-3 py-1.5 rounded-lg bg-terracotta-600 text-white text-xs font-mono font-bold flex items-center gap-1.5 shadow-sm">
+            <span class="w-2 h-2 rounded-full bg-white animate-ping"></span>
+            ${formatDurationMMSS(timer.remainingSeconds)} (Pause)
+          </button>
+        `;
+      }
+      if (timer.status === "ringing") {
+        return `
+          <button type="button" onclick="dismissTimerAlarm('${timer.id}')" class="px-3 py-1.5 rounded-lg bg-red-600 text-white text-xs font-bold animate-pulse">
+            Done! Dismiss
+          </button>
+        `;
+      }
+      const label = timer.status === "paused"
+        ? `Resume (${formatDurationMMSS(timer.remainingSeconds)})`
+        : `Start ${Math.round(timer.totalSeconds / 60)}m Timer`;
+      return `
+        <button type="button" onclick="toggleTimer('${timer.id}')" class="px-3 py-1.5 rounded-lg bg-charcoal hover:bg-stone-800 text-white text-xs font-semibold flex items-center gap-1.5 transition-colors">
+          <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/></svg>
+          ${label}
+        </button>
+      `;
+    }
+
+    function renderTimelineSteps() {
+      if (!state.plan) return;
+      const listEl = document.getElementById("timeline-list");
+      if (!listEl) return;
+      const serveMins = parseServeTimeMinutes(state.config.serveTime);
+
+      const filtered = state.plan.timelineSteps.filter((step) => {
+        if (state.stationFilter === "all") return true;
+        const st = getStationMeta(step.station);
+        return st.group === state.stationFilter;
+      });
+
+      if (filtered.length === 0) {
+        listEl.innerHTML = `<p class="text-sm text-stone-500 text-center py-6">No steps match this station filter.</p>`;
+        return;
+      }
+
+      listEl.innerHTML = filtered.map((step) => {
+        const st = getStationMeta(step.station);
+        const isDone = Boolean(state.completedSteps[step.id]);
+        const clockTime = formatClockTime(serveMins - step.offsetMinutesBeforeServe);
+        const linkedTimer = state.timers.find((t) => t.stepId === step.id);
+
+        return `
+          <div class="rounded-2xl border p-4 transition-all ${isDone ? "bg-stone-50 border-stone-200 opacity-70" : "bg-white border-stone-200 hover:border-stone-300 shadow-sm"}">
+            <div class="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4">
+              <div class="flex sm:flex-col items-center sm:items-start justify-between sm:w-28 shrink-0 gap-1">
+                <div class="font-mono font-bold text-base text-terracotta-700">${clockTime}</div>
+                <div class="text-[11px] font-semibold text-stone-500 bg-parchment px-2 py-0.5 rounded-md">${formatOffsetLabel(step.offsetMinutesBeforeServe)}</div>
+              </div>
+
+              <div class="flex-1 space-y-2 min-w-0">
+                <div class="flex flex-wrap items-center gap-2">
+                  <button type="button" onclick="toggleStepComplete('${step.id}')" class="w-5 h-5 rounded-md border flex items-center justify-center shrink-0 transition-colors ${isDone ? "bg-sage-600 border-sage-600 text-white" : "border-stone-300 bg-white hover:border-terracotta-500"}" aria-label="Mark step complete">
+                    ${isDone ? '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>' : ""}
+                  </button>
+                  <span class="text-xs font-bold text-stone-500 uppercase tracking-wide">${escapeHtml(step.dish)}</span>
+                  <span class="text-[11px] font-semibold px-2 py-0.5 rounded-md border ${st.badge}">${escapeHtml(st.label)}</span>
+                  ${step.temperature ? `<span class="text-[11px] font-mono font-bold px-2 py-0.5 rounded-md bg-stone-100 text-stone-700">${escapeHtml(step.temperature)}</span>` : ""}
+                </div>
+
+                <h4 class="font-bold text-charcoal text-sm sm:text-base ${isDone ? "line-through text-stone-500" : ""}">
+                  ${escapeHtml(step.title)}
+                </h4>
+                <p class="text-xs sm:text-sm text-stone-600 leading-relaxed">${escapeHtml(step.instructions)}</p>
+                ${step.tips ? `<p class="text-xs text-stone-500 italic">Tip: ${escapeHtml(step.tips)}</p>` : ""}
+
+                <div class="pt-1 flex flex-wrap items-center justify-between gap-2">
+                  <span class="text-xs font-medium text-stone-400">
+                    ${step.durationMinutes > 0 ? `Est. duration: ${step.durationMinutes} min` : "Quick action"}
+                  </span>
+                  ${linkedTimer ? renderInlineTimerButton(linkedTimer) : ""}
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    /**
+     * =========================================================================
+     * 9. INTERACTIVE MULTI-TIMER ENGINE & DYNAMIC STOVE VISUALIZER
+     * =========================================================================
+     */
+    function tickTimers() {
+      let changed = false;
+      let anyRinging = false;
+      const now = Date.now();
+
+      state.timers.forEach((t) => {
+        if (t.status === "running" && t.endTimestamp) {
+          const nextRemaining = Math.max(0, Math.ceil((t.endTimestamp - now) / 1000));
+          if (nextRemaining !== t.remainingSeconds) {
+            t.remainingSeconds = nextRemaining;
+            changed = true;
+          }
+          if (nextRemaining <= 0) {
+            t.status = "ringing";
+            t.endTimestamp = null;
+            changed = true;
+            anyRinging = true;
+            playChime();
+          }
+        } else if (t.status === "ringing") {
+          anyRinging = true;
+        }
+      });
+
+      if (anyRinging && !alarmIntervalId) {
+        alarmIntervalId = setInterval(() => {
+          const stillRinging = state.timers.some((t) => t.status === "ringing");
+          if (stillRinging) {
+            playChime();
+          } else {
+            clearInterval(alarmIntervalId);
+            alarmIntervalId = null;
+          }
+        }, 4500);
+      } else if (!anyRinging && alarmIntervalId) {
+        clearInterval(alarmIntervalId);
+        alarmIntervalId = null;
+      }
+
+      if (changed) {
+        renderTimers();
+        if (state.activeTab === "plan" && state.plan) {
+          renderPlan();
+        }
+      }
+      renderActiveTimersDock();
+      renderAlarmBanner();
+    }
+
+    function toggleTimer(timerId) {
+      const t = state.timers.find((item) => item.id === timerId);
+      if (!t) return;
+
+      ensureAudioUnlocked();
+
+      if (t.status === "running") {
+        t.status = "paused";
+        t.endTimestamp = null;
+      } else {
+        if (t.remainingSeconds <= 0) {
+          t.remainingSeconds = t.totalSeconds;
+        }
+        t.status = "running";
+        t.endTimestamp = Date.now() + t.remainingSeconds * 1000;
+      }
+
+      persistTimers();
+      renderTimers();
+      if (state.plan) renderPlan();
+      renderActiveTimersDock();
+      renderAlarmBanner();
+    }
+
+    function resetTimer(timerId) {
+      const t = state.timers.find((item) => item.id === timerId);
+      if (!t) return;
+      t.status = "idle";
+      t.remainingSeconds = t.totalSeconds;
+      t.endTimestamp = null;
+      persistTimers();
+      renderTimers();
+      if (state.plan) renderPlan();
+      renderActiveTimersDock();
+      renderAlarmBanner();
+    }
+
+    function adjustTimer(timerId, deltaSeconds) {
+      const t = state.timers.find((item) => item.id === timerId);
+      if (!t) return;
+      t.remainingSeconds = Math.max(10, t.remainingSeconds + deltaSeconds);
+      if (t.remainingSeconds > t.totalSeconds) {
+        t.totalSeconds = t.remainingSeconds;
+      }
+      if (t.status === "running") {
+        t.endTimestamp = Date.now() + t.remainingSeconds * 1000;
+      } else if (t.status === "ringing") {
+        t.status = "paused";
+      }
+      persistTimers();
+      renderTimers();
+      renderActiveTimersDock();
+    }
+
+    function dismissTimerAlarm(timerId) {
+      const t = state.timers.find((item) => item.id === timerId);
+      if (!t) return;
+      t.status = "idle";
+      t.remainingSeconds = t.totalSeconds;
+      t.endTimestamp = null;
+      persistTimers();
+      renderTimers();
+      if (state.plan) renderPlan();
+      renderActiveTimersDock();
+      renderAlarmBanner();
+    }
+
+    function dismissAllAlarms() {
+      state.timers.forEach((t) => {
+        if (t.status === "ringing") {
+          t.status = "idle";
+          t.remainingSeconds = t.totalSeconds;
+          t.endTimestamp = null;
+        }
+      });
+      persistTimers();
+      renderTimers();
+      if (state.plan) renderPlan();
+      renderActiveTimersDock();
+      renderAlarmBanner();
+    }
+
+    function openCustomTimerModal() {
+      populateCustomTimerStations();
+      document.getElementById("form-custom-timer").reset();
+      document.getElementById("ct-minutes").value = 15;
+      document.getElementById("modal-custom-timer").classList.remove("hidden");
+    }
+
+    function closeCustomTimerModal() {
+      document.getElementById("modal-custom-timer").classList.add("hidden");
+    }
+
+    function saveCustomTimer(e) {
+      e.preventDefault();
+      const label = document.getElementById("ct-label").value.trim();
+      const minutes = parseInt(document.getElementById("ct-minutes").value, 10) || 1;
+      const station = normalizeStationId(document.getElementById("ct-station").value);
+      const temperature = document.getElementById("ct-temp").value.trim();
+
+      if (!label) return;
+
+      state.timers.unshift({
+        id: "ct-" + Date.now(),
+        stepId: null,
+        label,
+        dish: "Custom Kitchen Timer",
+        station,
+        temperature,
+        totalSeconds: minutes * 60,
+        remainingSeconds: minutes * 60,
+        status: "idle",
+        endTimestamp: null,
+        isCustom: true,
+        isMakeAhead: false
+      });
+
+      persistTimers();
+      renderTimers();
+      closeCustomTimerModal();
+      showToast(`Created ${minutes}m timer: "${label}"`, "success");
+    }
+
+    function deleteCustomTimer(timerId) {
+      state.timers = state.timers.filter((t) => t.id !== timerId);
+      persistTimers();
+      renderTimers();
+      renderActiveTimersDock();
+      renderAlarmBanner();
+    }
+
+    /** Render the live dynamic stovetop burners & oven(s) visualizer. */
+    function renderStoveVisualizer() {
+      const k = getKitchenConfig();
+      const totalBurners = k.smallBurners + k.mediumBurners + k.largeBurners;
+      const burnersTitle = document.getElementById("stove-burners-title");
+      const burnersSubtitle = document.getElementById("stove-burners-subtitle");
+      const burnersGrid = document.getElementById("stove-burners-grid");
+      const ovensContainer = document.getElementById("stove-ovens-container");
+
+      if (!burnersGrid || !ovensContainer) return;
+
+      burnersTitle.textContent = `Stovetop (${totalBurners} ${totalBurners === 1 ? "Burner" : "Burners"})`;
+      const subtitleParts = [];
+      if (k.smallBurners > 0) subtitleParts.push(`${k.smallBurners} Small`);
+      if (k.mediumBurners > 0) subtitleParts.push(`${k.mediumBurners} Medium`);
+      if (k.largeBurners > 0) subtitleParts.push(`${k.largeBurners} Large`);
+      burnersSubtitle.textContent = subtitleParts.length ? subtitleParts.join(" • ") : "No Burners Configured";
+
+      const burnerConfigs = [];
+      for (let i = 1; i <= k.smallBurners; i++) {
+        burnerConfigs.push({ id: `small_burner_${i}`, label: `Small Burner ${i}`, size: "small" });
+      }
+      for (let i = 1; i <= k.mediumBurners; i++) {
+        burnerConfigs.push({ id: `medium_burner_${i}`, label: `Medium Burner ${i}`, size: "medium" });
+      }
+      for (let i = 1; i <= k.largeBurners; i++) {
+        burnerConfigs.push({ id: `large_burner_${i}`, label: `Large Burner ${i}`, size: "large" });
+      }
+
+      if (burnerConfigs.length === 0) {
+        burnersGrid.className = "grid grid-cols-1";
+        burnersGrid.innerHTML = `
+          <div class="rounded-xl bg-stone-800/60 border border-dashed border-stone-700 p-6 text-center text-xs text-stone-400">
+            No stovetop burners configured. Adjust burner counts on the Recipes tab if needed.
+          </div>
+        `;
+      } else {
+        burnersGrid.className = burnerConfigs.length >= 5
+          ? "grid grid-cols-2 sm:grid-cols-3 gap-3"
+          : "grid grid-cols-2 gap-3 sm:gap-4";
+
+        burnersGrid.innerHTML = burnerConfigs.map((b) => {
+          const active = state.timers.find((t) => normalizeStationId(t.station) === b.id && (t.status === "running" || t.status === "ringing"));
+          const sizeMeta = {
+            small:  { pad: "p-3",   ringDim: "w-11 h-11", coreDim: "w-4 h-4", labelClr: "text-teal-300",   activeBox: "bg-teal-950/60 border-teal-400/80 shadow-lg shadow-teal-500/10",   activeRing: "border-teal-400 shadow-[0_0_14px_rgba(45,212,191,0.7)]",   activeCore: "bg-teal-300" },
+            medium: { pad: "p-3",   ringDim: "w-12 h-12", coreDim: "w-5 h-5", labelClr: "text-sky-300",    activeBox: "bg-sky-950/60 border-sky-400/80 shadow-lg shadow-sky-500/10",     activeRing: "border-sky-400 shadow-[0_0_14px_rgba(56,189,248,0.7)]",    activeCore: "bg-sky-300" },
+            large:  { pad: "p-3.5", ringDim: "w-14 h-14", coreDim: "w-6 h-6", labelClr: "text-orange-300", activeBox: "bg-orange-950/60 border-orange-500/80 shadow-lg shadow-orange-500/10", activeRing: "border-orange-500 shadow-[0_0_14px_rgba(249,115,22,0.7)]", activeCore: "bg-orange-400" }
+          }[b.size];
+
+          const boxClass = active
+            ? `rounded-xl ${sizeMeta.pad} flex flex-col items-center text-center transition-all border ${active.status === "ringing" ? "bg-red-950/80 border-red-500 animate-pulse" : sizeMeta.activeBox}`
+            : `rounded-xl bg-stone-800/80 border border-stone-700 ${sizeMeta.pad} flex flex-col items-center text-center transition-all`;
+
+          const ringClass = active
+            ? `${sizeMeta.ringDim} rounded-full border-4 flex items-center justify-center mb-1.5 transition-all ${sizeMeta.activeRing}`
+            : `${sizeMeta.ringDim} rounded-full border-4 border-stone-600 flex items-center justify-center mb-1.5 transition-all`;
+
+          const coreClass = active
+            ? `${sizeMeta.coreDim} rounded-full ${sizeMeta.activeCore} animate-pulse`
+            : `${sizeMeta.coreDim} rounded-full bg-stone-700`;
+
+          const statusHtml = active
+            ? `<span class="text-[11px] text-white font-mono font-bold truncate max-w-full mt-0.5">${escapeHtml(active.label)} &bull; ${formatDurationMMSS(active.remainingSeconds)}</span>`
+            : `<span class="text-[11px] text-stone-400 truncate max-w-full mt-0.5">Idle</span>`;
+
+          return `
+            <div class="${boxClass}">
+              <div class="${ringClass}">
+                <div class="${coreClass}"></div>
+              </div>
+              <span class="text-[11px] font-bold ${sizeMeta.labelClr}">${escapeHtml(b.label)}</span>
+              ${statusHtml}
+            </div>
+          `;
+        }).join("");
+      }
+
+      if (k.ovens === 0) {
+        ovensContainer.innerHTML = `
+          <div class="flex-1 rounded-2xl bg-stone-900 p-5 text-white border border-stone-800 flex flex-col items-center justify-center text-center">
+            <span class="text-[11px] font-bold uppercase tracking-widest text-stone-400 mb-2">Ovens (0 Configured)</span>
+            <p class="text-xs text-stone-400 max-w-xs">No ovens are enabled in your kitchen setup. Increase the oven count on the Recipes tab to track oven timers here.</p>
+          </div>
+        `;
+      } else {
+        const ovenCards = [];
+        for (let i = 1; i <= k.ovens; i++) {
+          const ovenId = `oven_${i}`;
+          const ovenLabel = k.ovens === 1 ? "Main Oven (Single)" : `Oven ${i}`;
+          const activeOven = state.timers.filter((t) => normalizeStationId(t.station) === ovenId && (t.status === "running" || t.status === "ringing"));
+          const primary = activeOven[0] || null;
+
+          const pillClass = primary
+            ? "px-2.5 py-0.5 rounded-full bg-amber-500 text-stone-950 text-xs font-mono font-extrabold"
+            : "px-2.5 py-0.5 rounded-full bg-stone-800 text-stone-400 text-xs font-mono font-bold";
+          const pillText = primary ? (primary.temperature || "HEATING") : "OFF / IDLE";
+
+          const winClass = primary
+            ? `flex-1 ${k.ovens > 1 ? "min-h-[82px]" : "min-h-[120px]"} rounded-xl border-2 p-3.5 flex flex-col items-center justify-center text-center transition-all ${
+                primary.status === "ringing"
+                  ? "bg-red-950/80 border-red-500 animate-pulse"
+                  : "bg-gradient-to-b from-amber-950/80 to-orange-950/70 border-amber-500/80 shadow-inner"
+              }`
+            : `flex-1 ${k.ovens > 1 ? "min-h-[82px]" : "min-h-[120px]"} rounded-xl bg-stone-800/90 border-2 border-stone-700 p-3.5 flex flex-col items-center justify-center text-center transition-all`;
+
+          ovenCards.push(`
+            <div class="flex-1 rounded-2xl bg-stone-900 p-4 text-white border border-stone-800 flex flex-col justify-between transition-all">
+              <div class="flex items-center justify-between mb-2.5">
+                <span class="text-[11px] font-bold uppercase tracking-widest text-stone-400">${escapeHtml(ovenLabel)}</span>
+                <span class="${pillClass}">${escapeHtml(pillText)}</span>
+              </div>
+              <div class="${winClass}">
+                <div class="w-full h-1 bg-stone-700 rounded-full mb-2.5 opacity-60"></div>
+                ${primary ? `
+                  <p class="text-sm font-bold text-amber-100">${escapeHtml(primary.label)}</p>
+                  <p class="text-xs font-mono font-bold text-amber-300 mt-1">${formatDurationMMSS(primary.remainingSeconds)} remaining${activeOven.length > 1 ? ` (+${activeOven.length - 1} more)` : ""}</p>
+                ` : `
+                  <p class="text-sm font-bold text-stone-300">No active oven timer</p>
+                  <p class="text-xs text-stone-400 mt-1">Start any timer assigned to ${escapeHtml(k.ovens === 1 ? "the oven" : ovenLabel)} below.</p>
+                `}
+                <div class="w-full h-1 bg-stone-700 rounded-full mt-2.5 opacity-60"></div>
+              </div>
+            </div>
+          `);
+        }
+        ovensContainer.innerHTML = ovenCards.join("");
+      }
+    }
+
+    /** Render all timer cards on Tab 3. */
+    function renderTimers() {
+      const emptyEl = document.getElementById("timers-empty");
+      const gridEl = document.getElementById("timers-grid");
+      const activeBadge = document.getElementById("badge-active-timers");
+
+      renderStoveVisualizer();
+
+      const activeCount = state.timers.filter((t) => t.status === "running" || t.status === "ringing").length;
+      if (activeCount > 0) {
+        activeBadge.classList.remove("hidden");
+        activeBadge.textContent = activeCount;
+      } else {
+        activeBadge.classList.add("hidden");
+      }
+
+      if (state.timers.length === 0) {
+        emptyEl.classList.remove("hidden");
+        gridEl.classList.add("hidden");
+        gridEl.innerHTML = "";
+        return;
+      }
+
+      emptyEl.classList.add("hidden");
+      gridEl.classList.remove("hidden");
+
+      const priority = { ringing: 0, running: 1, paused: 2, idle: 3 };
+      const sorted = [...state.timers].sort((a, b) => priority[a.status] - priority[b.status]);
+
+      gridEl.innerHTML = sorted.map((t) => {
+        const st = getStationMeta(t.station);
+        const pct = t.totalSeconds > 0 ? Math.min(100, Math.max(0, ((t.totalSeconds - t.remainingSeconds) / t.totalSeconds) * 100)) : 0;
+        const cardStyle = t.status === "ringing"
+          ? "border-red-500 bg-red-50 ring-2 ring-red-400/50"
+          : t.status === "running"
+            ? "border-terracotta-500 bg-white ring-1 ring-terracotta-500/20 shadow-md"
+            : "border-stone-200 bg-white shadow-sm";
+
+        return `
+          <div class="rounded-2xl border p-4 flex flex-col justify-between gap-3 transition-all ${cardStyle}">
+            <div class="space-y-1.5">
+              <div class="flex items-start justify-between gap-2">
+                <div class="flex flex-wrap items-center gap-1.5">
+                  <span class="text-[11px] font-semibold px-2 py-0.5 rounded-md border ${st.badge}">${escapeHtml(st.short)}</span>
+                  ${t.temperature ? `<span class="text-[11px] font-mono font-bold px-2 py-0.5 rounded-md bg-stone-100 text-stone-700">${escapeHtml(t.temperature)}</span>` : ""}
+                </div>
+                ${t.isCustom ? `<button type="button" onclick="deleteCustomTimer('${t.id}')" class="text-xs text-stone-400 hover:text-red-600 font-semibold">Remove</button>` : ""}
+              </div>
+              <h3 class="font-bold text-charcoal text-sm leading-snug">${escapeHtml(t.label)}</h3>
+              <p class="text-xs text-stone-500">${escapeHtml(t.dish)}</p>
+            </div>
+
+            <div class="py-1 space-y-2">
+              <div class="font-mono text-3xl font-bold tracking-tight text-center ${t.status === "ringing" ? "text-red-600 animate-pulse" : t.status === "running" ? "text-terracotta-700" : "text-charcoal"}">
+                ${formatDurationMMSS(t.remainingSeconds)}
+              </div>
+              <div class="w-full h-2 rounded-full bg-stone-100 overflow-hidden">
+                <div class="h-full rounded-full transition-all duration-500 ${t.status === "ringing" ? "bg-red-600" : "bg-terracotta-500"}" style="width: ${pct}%"></div>
+              </div>
+            </div>
+
+            <div class="space-y-2">
+              <div class="flex items-center gap-2">
+                ${t.status === "ringing" ? `
+                  <button type="button" onclick="dismissTimerAlarm('${t.id}')" class="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold shadow-sm transition-colors">
+                    Dismiss Alarm
+                  </button>
+                ` : `
+                  <button type="button" onclick="toggleTimer('${t.id}')" class="flex-1 py-2.5 rounded-xl text-xs font-bold shadow-sm transition-colors ${
+                    t.status === "running"
+                      ? "bg-amber-500 hover:bg-amber-600 text-stone-950"
+                      : "bg-terracotta-600 hover:bg-terracotta-700 text-white"
+                  }">
+                    ${t.status === "running" ? "Pause" : t.status === "paused" ? "Resume" : "Start Timer"}
+                  </button>
+                `}
+                <button type="button" onclick="resetTimer('${t.id}')" class="px-3.5 py-2.5 rounded-xl border border-stone-200 bg-cream hover:bg-parchment text-xs font-semibold text-stone-700 transition-colors">
+                  Reset
+                </button>
+              </div>
+              <div class="grid grid-cols-3 gap-1.5">
+                <button type="button" onclick="adjustTimer('${t.id}', -60)" class="py-1.5 rounded-lg bg-stone-100 hover:bg-stone-200 text-[11px] font-mono font-bold text-stone-600">-1m</button>
+                <button type="button" onclick="adjustTimer('${t.id}', 60)" class="py-1.5 rounded-lg bg-stone-100 hover:bg-stone-200 text-[11px] font-mono font-bold text-stone-600">+1m</button>
+                <button type="button" onclick="adjustTimer('${t.id}', 300)" class="py-1.5 rounded-lg bg-stone-100 hover:bg-stone-200 text-[11px] font-mono font-bold text-stone-600">+5m</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    /** Sticky bottom dock displaying active/ringing timers from any tab. */
+    function renderActiveTimersDock() {
+      const dock = document.getElementById("active-timers-dock");
+      const list = document.getElementById("dock-timers-list");
+      const active = state.timers.filter((t) => t.status === "running" || t.status === "ringing");
+
+      if (active.length === 0) {
+        dock.classList.add("hidden");
+        return;
+      }
+
+      dock.classList.remove("hidden");
+      list.innerHTML = active.map((t) => `
+        <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl border shrink-0 ${
+          t.status === "ringing"
+            ? "bg-red-600 border-red-400 text-white animate-pulse"
+            : "bg-white/10 border-white/15 text-white"
+        }">
+          <span class="text-xs font-semibold max-w-[130px] truncate">${escapeHtml(t.label)}</span>
+          <span class="font-mono text-xs font-bold text-terracotta-200">${formatDurationMMSS(t.remainingSeconds)}</span>
+        </div>
+      `).join("");
+    }
+
+    function renderAlarmBanner() {
+      const banner = document.getElementById("alarm-banner");
+      const ringing = state.timers.filter((t) => t.status === "ringing");
+      if (ringing.length === 0) {
+        banner.classList.add("hidden");
+        return;
+      }
+      banner.classList.remove("hidden");
+      document.getElementById("alarm-banner-title").textContent =
+        ringing.length === 1
+          ? `Timer Done: ${ringing[0].label}`
+          : `${ringing.length} Kitchen Timers Complete!`;
+      document.getElementById("alarm-banner-sub").textContent =
+        ringing.map((t) => `${t.label} (${getStationMeta(t.station).short})`).join(" • ");
+    }
+
+    /**
+     * =========================================================================
+     * 10. SOUND CHIME ENGINE (TONE.JS WITH WEB AUDIO FALLBACK)
+     * =========================================================================
+     */
+    function toggleSound() {
+      state.config.soundEnabled = !state.config.soundEnabled;
+      persistConfig();
+      updateSoundIcons();
+      showToast(state.config.soundEnabled ? "Timer chimes enabled" : "Timer chimes muted", "info");
+    }
+
+    function updateSoundIcons() {
+      const onIcon = document.getElementById("icon-sound-on");
+      const offIcon = document.getElementById("icon-sound-off");
+      if (!onIcon || !offIcon) return;
+      if (state.config.soundEnabled) {
+        onIcon.classList.remove("hidden");
+        offIcon.classList.add("hidden");
+      } else {
+        onIcon.classList.add("hidden");
+        offIcon.classList.remove("hidden");
+      }
+    }
+
+    async function ensureAudioUnlocked() {
+      try {
+        if (window.Tone && Tone.context.state !== "running") {
+          await Tone.start();
+        }
+      } catch (_) {}
+    }
+
+    function testChime() {
+      ensureAudioUnlocked();
+      playChime(true);
+      showToast("Playing kitchen chime", "info");
+    }
+
+    function playChime(force = false) {
+      if (!force && !state.config.soundEnabled) return;
+      try {
+        if (window.Tone) {
+          const synth = new Tone.PolySynth(Tone.Synth, {
+            oscillator: { type: "triangle" },
+            envelope: { attack: 0.02, decay: 0.3, sustain: 0.1, release: 0.8 }
+          }).toDestination();
+          const now = Tone.now();
+          synth.triggerAttackRelease("C5", "8n", now);
+          synth.triggerAttackRelease("E5", "8n", now + 0.18);
+          synth.triggerAttackRelease("G5", "8n", now + 0.36);
+          synth.triggerAttackRelease("C6", "4n", now + 0.54);
+          return;
+        }
+      } catch (_) {}
+
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        const ctx = new AudioCtx();
+        [523.25, 659.25, 783.99].forEach((freq, idx) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = "sine";
+          osc.frequency.value = freq;
+          gain.gain.setValueAtTime(0.15, ctx.currentTime + idx * 0.18);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.18 + 0.35);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(ctx.currentTime + idx * 0.18);
+          osc.stop(ctx.currentTime + idx * 0.18 + 0.36);
+        });
+      } catch (_) {}
+    }
+
+    /**
+     * =========================================================================
+     * 11. COOKIE STORAGE MODAL, CLIPBOARD EXPORT & CLEAR HANDLERS
+     * =========================================================================
+     */
+    function openStorageModal() {
+      const box = document.getElementById("storage-modal-status");
+      document.getElementById("clear-confirm-box").classList.add("hidden");
+
+      if (!CookieStore.cookiesAvailable) {
+        box.className = "rounded-xl bg-amber-50 border border-amber-200 p-4 text-sm text-amber-800";
+        box.innerHTML = `<strong>Sandbox Preview Notice:</strong> This preview frame restricts browser cookies, so data is held in memory for now. Once deployed to <strong>GitHub Pages</strong>, FeastSync automatically persists everything in your site cookies.`;
+      } else {
+        const stats = CookieStore.getUsageStats();
+        box.className = "rounded-xl bg-sage-50 border border-sage-600/20 p-4 text-sm text-sage-700";
+        box.innerHTML = `<strong>Cookies Active:</strong> Using <strong>${stats.count}</strong> chunked cookies (${(stats.bytes / 1024).toFixed(2)} KB) storing ${state.recipes.length} recipes and ${state.timers.length} timers.`;
+      }
+
+      document.getElementById("modal-storage").classList.remove("hidden");
+    }
+
+    function closeStorageModal() {
+      document.getElementById("modal-storage").classList.add("hidden");
+    }
+
+    function requestClearAllCookies() {
+      document.getElementById("clear-confirm-box").classList.remove("hidden");
+    }
+
+    function cancelClearAllCookies() {
+      document.getElementById("clear-confirm-box").classList.add("hidden");
+    }
+
+    function confirmClearAllCookies() {
+      CookieStore.clearAll();
+      state.recipes = [];
+      state.plan = null;
+      state.completedSteps = {};
+      state.timers = [];
+      state.config.geminiApiKey = "";
+      state.config.openaiApiKey = "";
+      state.config.geminiModel = FALLBACK_MODELS.gemini[0].id;
+      state.config.openaiModel = FALLBACK_MODELS.openai[0].id;
+      state.config.freeTierOnly = true;
+      state.config.autoFallback = true;
+      state.config.mealName = "Thanksgiving Dinner";
+      state.config.serveTime = "17:00";
+      state.config.aiSetupPrompted = false;
+      state.config.kitchen = { ...DEFAULT_KITCHEN };
+      runtimeModels = { gemini: [], openai: [] };
+
+      syncConfigInputs();
+      renderKitchenConfigUI();
+      renderStationFilters();
+      renderRecipes();
+      renderPlan();
+      renderTimers();
+      renderActiveTimersDock();
+      renderAlarmBanner();
+      updateCookieStatusBadge();
+      updateAiStatusIndicator();
+      closeStorageModal();
+      switchTab("setup");
+      showToast("All FeastSync cookies cleared.", "info");
+    }
+
+    /** Copy full meal JSON to clipboard using iFrame-safe execCommand fallback. */
+    function exportBackupJson() {
+      const backup = JSON.stringify({
+        mealName: state.config.mealName,
+        serveTime: state.config.serveTime,
+        kitchen: getKitchenConfig(),
+        recipes: state.recipes,
+        plan: state.plan
+      }, null, 2);
+
+      try {
+        const ta = document.createElement("textarea");
+        ta.value = backup;
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+        showToast("Meal JSON backup copied to clipboard!", "success");
+      } catch (err) {
+        showToast("Unable to copy backup automatically.", "error");
+      }
+    }
+
+    /**
+     * =========================================================================
+     * 12. PRINTABLE KITCHEN RUN SHEET (TIMELINE, MAKE-AHEAD & INSTRUCTIONS)
+     * =========================================================================
+     */
+    function openPrintModal() {
+      const hasPlan = Boolean(state.plan && Array.isArray(state.plan.timelineSteps) && state.plan.timelineSteps.length > 0);
+      const hasMakeAhead = Boolean(state.plan && Array.isArray(state.plan.makeAheadItems) && state.plan.makeAheadItems.length > 0);
+      const hasRecipes = state.recipes.length > 0;
+
+      if (!hasPlan && !hasRecipes) {
+        showToast("Add recipes or generate a schedule first before printing.", "error");
+        return;
+      }
+
+      const chkMakeAhead = document.getElementById("print-opt-makeahead");
+      const chkTimeline = document.getElementById("print-opt-timeline");
+      const chkRecipes = document.getElementById("print-opt-recipes");
+      const summaryEl = document.getElementById("print-modal-summary");
+
+      chkMakeAhead.disabled = !hasMakeAhead;
+      chkMakeAhead.checked = hasMakeAhead;
+
+      chkTimeline.disabled = !hasPlan;
+      chkTimeline.checked = hasPlan;
+
+      chkRecipes.disabled = !hasRecipes;
+      chkRecipes.checked = hasRecipes;
+
+      const summaryParts = [];
+      if (hasMakeAhead) summaryParts.push(`${state.plan.makeAheadItems.length} make-ahead items`);
+      if (hasPlan) summaryParts.push(`${state.plan.timelineSteps.length} timeline steps`);
+      if (hasRecipes) summaryParts.push(`${state.recipes.length} recipes`);
+
+      const serveClock = formatClockTime(parseServeTimeMinutes(state.config.serveTime));
+      summaryEl.innerHTML = `<strong>${escapeHtml(state.config.mealName || "Big Meal")}</strong> &bull; Serve at ${serveClock}<br><span class="text-stone-500">${summaryParts.join(" • ")}</span>`;
+
+      document.getElementById("modal-print").classList.remove("hidden");
+    }
+
+    function closePrintModal() {
+      document.getElementById("modal-print").classList.add("hidden");
+    }
+
+    /** Populate the dedicated ink-friendly print container with selected sections. */
+    function renderPrintSheet(options = null) {
+      const container = document.getElementById("print-sheet");
+      if (!container) return;
+
+      const hasPlan = Boolean(state.plan && Array.isArray(state.plan.timelineSteps) && state.plan.timelineSteps.length > 0);
+      const hasMakeAhead = Boolean(state.plan && Array.isArray(state.plan.makeAheadItems) && state.plan.makeAheadItems.length > 0);
+      const hasRecipes = state.recipes.length > 0;
+
+      const opts = options || {
+        includeMakeAhead: hasMakeAhead,
+        includeTimeline: hasPlan,
+        includeRecipes: hasRecipes,
+        blankCheckboxes: true
+      };
+
+      const serveMins = parseServeTimeMinutes(state.config.serveTime);
+      const maxOffset = hasPlan
+        ? state.plan.timelineSteps.reduce((max, s) => Math.max(max, s.offsetMinutesBeforeServe || 0), 0)
+        : 0;
+      const startClock = hasPlan ? formatClockTime(serveMins - maxOffset) : "--:--";
+      const printedDate = new Date().toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric", year: "numeric" });
+
+      let html = `
+        <div class="border-b-2 border-stone-900 pb-3 mb-4 flex items-end justify-between gap-4">
+          <div>
+            <div class="text-[10px] font-bold uppercase tracking-widest text-stone-500">FeastSync Kitchen Run Sheet</div>
+            <h1 class="text-2xl font-extrabold text-black leading-tight mt-0.5">${escapeHtml(state.config.mealName || "Big Meal")}</h1>
+            <p class="text-xs text-stone-600 mt-1">${escapeHtml(formatKitchenSummaryText())}</p>
+          </div>
+          <div class="text-right text-xs space-y-0.5 shrink-0">
+            <div><span class="font-semibold text-stone-500">Target Serve Time:</span> <strong class="font-mono text-sm">${formatClockTime(serveMins)}</strong></div>
+            ${hasPlan ? `<div><span class="font-semibold text-stone-500">First Step Starts:</span> <strong class="font-mono">${startClock}</strong></div>` : ""}
+            <div class="text-[11px] text-stone-500">Printed ${escapeHtml(printedDate)}</div>
+          </div>
+        </div>
+      `;
+
+      // Executive Summary & Oven Strategy
+      if (hasPlan && (opts.includeTimeline || opts.includeMakeAhead)) {
+        html += `
+          <div class="border border-stone-300 rounded-lg p-3 mb-4 space-y-1.5 break-inside-avoid">
+            <p class="text-xs text-stone-800">${escapeHtml(state.plan.mealSummary)}</p>
+            <p class="text-xs text-black"><strong class="uppercase tracking-wider text-[10px] mr-1.5 px-1.5 py-0.5 border border-stone-400 rounded">Oven Strategy</strong>${escapeHtml(state.plan.ovenStrategy)}</p>
+          </div>
+        `;
+      }
+
+      // Section 1: Make-Ahead & Set Aside
+      if (opts.includeMakeAhead && hasMakeAhead) {
+        html += `
+          <div class="mb-5">
+            <h2 class="text-base font-extrabold uppercase tracking-wider border-b border-stone-400 pb-1 mb-2.5 break-after-avoid">
+              Make-Ahead &amp; Set Aside (${state.plan.makeAheadItems.length})
+            </h2>
+            <div class="space-y-2.5">
+              ${state.plan.makeAheadItems.map((item) => {
+                const st = getStationMeta(item.station);
+                return `
+                  <div class="border border-stone-300 rounded-lg p-3 break-inside-avoid">
+                    <div class="flex items-start gap-2.5">
+                      <span class="mt-0.5 inline-block w-4 h-4 rounded-sm border-2 border-stone-800 shrink-0"></span>
+                      <div class="flex-1 space-y-1">
+                        <div class="flex flex-wrap items-baseline justify-between gap-2">
+                          <strong class="text-sm text-black">${escapeHtml(item.dish)}</strong>
+                          <span class="text-xs font-semibold text-stone-700">${escapeHtml(item.whenToMake)} &bull; ${escapeHtml(st.label)}${item.durationMinutes > 0 ? ` &bull; ${item.durationMinutes} min` : ""}</span>
+                        </div>
+                        <p class="text-xs text-stone-800">${escapeHtml(item.instructions)}</p>
+                        <p class="text-xs text-stone-700"><strong>Store &amp; Reheat:</strong> ${escapeHtml(item.storageAndReheat)}</p>
+                      </div>
+                    </div>
+                  </div>
+                `;
+              }).join("")}
+            </div>
+          </div>
+        `;
+      }
+
+      // Section 2: Synchronized Cooking Timeline
+      if (opts.includeTimeline && hasPlan) {
+        html += `
+          <div class="mb-5">
+            <h2 class="text-base font-extrabold uppercase tracking-wider border-b border-stone-400 pb-1 mb-2.5 break-after-avoid">
+              Synchronized Cooking Timeline (${state.plan.timelineSteps.length} Steps)
+            </h2>
+            <div class="divide-y divide-stone-300 border-t border-b border-stone-300">
+              ${state.plan.timelineSteps.map((step) => {
+                const st = getStationMeta(step.station);
+                const clockTime = formatClockTime(serveMins - step.offsetMinutesBeforeServe);
+                const isChecked = !opts.blankCheckboxes && Boolean(state.completedSteps[step.id]);
+                return `
+                  <div class="py-2.5 flex items-start gap-3 break-inside-avoid">
+                    <div class="pt-0.5 shrink-0">
+                      <span class="inline-flex items-center justify-center w-4 h-4 rounded-sm border-2 border-stone-800 text-[11px] font-bold">
+                        ${isChecked ? "&#10003;" : ""}
+                      </span>
+                    </div>
+                    <div class="w-24 shrink-0">
+                      <div class="font-mono font-extrabold text-sm text-black">${clockTime}</div>
+                      <div class="font-mono text-[10px] text-stone-600">${formatOffsetLabel(step.offsetMinutesBeforeServe)}</div>
+                    </div>
+                    <div class="flex-1 space-y-0.5 min-w-0">
+                      <div class="flex flex-wrap items-center gap-1.5 text-[11px]">
+                        <span class="font-bold uppercase tracking-wide text-stone-700">${escapeHtml(step.dish)}</span>
+                        <span class="px-1.5 py-0.5 rounded border border-stone-400 font-semibold text-black">${escapeHtml(st.label)}</span>
+                        ${step.temperature ? `<span class="px-1.5 py-0.5 rounded bg-stone-100 border border-stone-300 font-mono font-bold text-black">${escapeHtml(step.temperature)}</span>` : ""}
+                        ${step.durationMinutes > 0 ? `<span class="font-mono font-semibold text-stone-700">Timer: ${step.durationMinutes} min</span>` : ""}
+                      </div>
+                      <div class="font-bold text-sm text-black">${escapeHtml(step.title)}</div>
+                      <p class="text-xs text-stone-800 leading-relaxed">${escapeHtml(step.instructions)}</p>
+                      ${step.tips ? `<p class="text-[11px] text-stone-600 italic">Tip: ${escapeHtml(step.tips)}</p>` : ""}
+                    </div>
+                  </div>
+                `;
+              }).join("")}
+            </div>
+          </div>
+        `;
+      }
+
+      // Section 3: Recipe Ingredients & Full Instructions Reference
+      if (opts.includeRecipes && hasRecipes) {
+        const pageBreakClass = (opts.includeTimeline || opts.includeMakeAhead) ? "break-before-page pt-2" : "";
+        html += `
+          <div class="${pageBreakClass}">
+            <h2 class="text-base font-extrabold uppercase tracking-wider border-b border-stone-400 pb-1 mb-3 break-after-avoid">
+              Recipe Ingredients &amp; Instructions Reference (${state.recipes.length} Dishes)
+            </h2>
+            <div class="space-y-3.5">
+              ${state.recipes.map((r, idx) => `
+                <div class="border border-stone-300 rounded-lg p-3.5 break-inside-avoid space-y-2">
+                  <h3 class="text-sm font-extrabold text-black border-b border-stone-200 pb-1">${idx + 1}. ${escapeHtml(r.name)}</h3>
+                  <div>
+                    <div class="text-[10px] font-bold uppercase tracking-wider text-stone-500">Ingredients</div>
+                    <p class="text-xs text-stone-900 whitespace-pre-line mt-0.5">${escapeHtml(r.ingredients)}</p>
+                  </div>
+                  <div>
+                    <div class="text-[10px] font-bold uppercase tracking-wider text-stone-500">Instructions</div>
+                    <p class="text-xs text-stone-800 whitespace-pre-line mt-0.5 leading-relaxed">${escapeHtml(r.instructions)}</p>
+                  </div>
+                </div>
+              `).join("")}
+            </div>
+          </div>
+        `;
+      }
+
+      container.innerHTML = html;
+    }
+
+    /** Build the print sheet with chosen modal options and trigger the browser print dialog. */
+    function executePrint() {
+      const options = {
+        includeMakeAhead: document.getElementById("print-opt-makeahead").checked,
+        includeTimeline: document.getElementById("print-opt-timeline").checked,
+        includeRecipes: document.getElementById("print-opt-recipes").checked,
+        blankCheckboxes: document.getElementById("print-opt-blank-checks").checked
+      };
+
+      if (!options.includeMakeAhead && !options.includeTimeline && !options.includeRecipes) {
+        showToast("Select at least one section to print.", "error");
+        return;
+      }
+
+      renderPrintSheet(options);
+      closePrintModal();
+
+      setTimeout(() => {
+        try {
+          window.print();
+        } catch (err) {
+          showToast("Unable to open print dialog automatically. Try Ctrl+P or Cmd+P.", "error");
+        }
+      }, 120);
+    }
+
+    // Ensure native Ctrl+P / Cmd+P always prints a fresh kitchen run sheet
+    window.addEventListener("beforeprint", () => {
+      const sheet = document.getElementById("print-sheet");
+      if (sheet && !sheet.innerHTML.trim()) {
+        renderPrintSheet();
+      }
+    });
+
+    /**
+     * =========================================================================
+     * 13. AI & API SETTINGS MODAL (FIRST-TIME PROMPT & TOP-RIGHT GEAR)
+     * =========================================================================
+     */
+    function openAiSettingsModal(isFirstVisit = false) {
+      const titleEl = document.getElementById("ai-modal-title");
+      const subEl = document.getElementById("ai-modal-subtitle");
+      const skipBtn = document.getElementById("btn-ai-modal-skip");
+      const geminiGuide = document.getElementById("guide-free-gemini");
+
+      if (isFirstVisit) {
+        titleEl.textContent = "Welcome to FeastSync!";
+        subEl.textContent = "Add your free Google Gemini (or OpenAI) API key to unlock AI meal scheduling & timers.";
+        skipBtn.textContent = "Skip for Now";
+      } else {
+        titleEl.textContent = "AI & API Settings";
+        subEl.textContent = "Switch AI providers, update your API key, or refresh available models anytime.";
+        skipBtn.textContent = "Close";
+      }
+
+      // Auto-expand the free Google Gemini guide if no key is saved yet; collapse it once configured
+      if (geminiGuide) {
+        geminiGuide.open = !getActiveApiKey();
+      }
+
+      syncConfigInputs();
+      document.getElementById("modal-ai-settings").classList.remove("hidden");
+    }
+
+    function closeAiSettingsModal() {
+      document.getElementById("modal-ai-settings").classList.add("hidden");
+      if (!state.config.aiSetupPrompted) {
+        state.config.aiSetupPrompted = true;
+        persistConfig();
+      }
+    }
+
+    function saveAndCloseAiSettingsModal() {
+      state.config.aiSetupPrompted = true;
+      persistConfig();
+      updateAiStatusIndicator();
+      document.getElementById("modal-ai-settings").classList.add("hidden");
+
+      const providerLabel = state.config.provider === "gemini" ? "Google Gemini" : "OpenAI ChatGPT";
+      if (getActiveApiKey()) {
+        showToast(`Saved ${providerLabel} settings (${getActiveModel()})`, "success");
+      } else {
+        showToast("You can add your API key anytime via the top-right gear icon.", "info");
+      }
+    }
+
+    /** Sync the top-right gear dot and Recipes tab AI summary badge with current key & model. */
+    function updateAiStatusIndicator() {
+      const hasKey = Boolean(getActiveApiKey());
+      const providerLabel = state.config.provider === "gemini" ? "Gemini" : "ChatGPT";
+      const modelId = getActiveModel();
+
+      const gearDot = document.getElementById("gear-key-dot");
+      const setupDot = document.getElementById("setup-ai-status-dot");
+      const setupText = document.getElementById("setup-ai-status-text");
+
+      if (gearDot) {
+        gearDot.className = hasKey
+          ? "absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white bg-sage-600"
+          : "absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white bg-amber-500 animate-pulse";
+      }
+
+      if (setupDot) {
+        setupDot.className = hasKey
+          ? "w-2 h-2 rounded-full bg-sage-600 shrink-0"
+          : "w-2 h-2 rounded-full bg-amber-500 shrink-0";
+      }
+
+      if (setupText) {
+        setupText.textContent = hasKey
+          ? `${providerLabel}: ${modelId}`
+          : `${providerLabel}: Add API Key`;
+      }
+    }
+
+    // Initialize FeastSync once DOM is ready
+    window.addEventListener("DOMContentLoaded", initApp);
+  </script>
+</body>
+</html>ent -->
   <script src="https://cdn.tailwindcss.com"></script>
 
   <!-- Tone.js for pleasant synthesized kitchen timer chimes (no external audio URLs required) -->
