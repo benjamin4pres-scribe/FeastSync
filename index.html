@@ -358,7 +358,7 @@
               <h2 id="plan-meal-title" class="text-xl sm:text-2xl font-extrabold">Thanksgiving Dinner</h2>
               <p id="plan-summary" class="text-sm text-stone-300 max-w-3xl leading-relaxed"></p>
             </div>
-            <div class="flex items-center gap-2 shrink-0">
+            <div class="flex flex-wrap items-center gap-2 shrink-0">
               <div class="bg-white/10 rounded-xl px-3.5 py-2 text-center">
                 <div class="text-[11px] uppercase tracking-wider text-stone-300">Start Cooking</div>
                 <div id="plan-start-time" class="text-base font-mono font-bold text-terracotta-200">--:--</div>
@@ -367,6 +367,12 @@
                 <div class="text-[11px] uppercase tracking-wider text-stone-300">Progress</div>
                 <div id="plan-progress-text" class="text-base font-mono font-bold text-sage-100">0/0</div>
               </div>
+              <button type="button" onclick="openRethinkModal()" class="px-3.5 py-2.5 rounded-xl bg-white/15 hover:bg-white/25 border border-white/15 text-white text-xs sm:text-sm font-bold transition-colors flex items-center gap-2">
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
+                <span>Rethink Times</span>
+              </button>
               <button type="button" onclick="openPrintModal()" class="px-4 py-2.5 rounded-xl bg-terracotta-500 hover:bg-terracotta-600 text-white text-xs sm:text-sm font-bold shadow-sm transition-colors flex items-center gap-2">
                 <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
@@ -413,6 +419,12 @@
                 <label for="plan-quick-serve-time" class="text-xs font-semibold text-stone-600">Shift Serve Time:</label>
                 <input id="plan-quick-serve-time" type="time" onchange="syncServeTimeFromPlan(this.value)" class="bg-transparent text-xs font-mono font-bold text-terracotta-700 focus:outline-none">
               </div>
+              <button type="button" onclick="openRethinkModal()" class="px-3 py-1.5 rounded-xl border border-terracotta-200 bg-terracotta-50 hover:bg-terracotta-100 text-xs font-bold text-terracotta-700 flex items-center gap-1.5 transition-colors">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
+                Rethink Times
+              </button>
               <button type="button" onclick="openPrintModal()" class="px-3 py-1.5 rounded-xl border border-stone-300 bg-white hover:bg-stone-50 text-xs font-semibold text-charcoal flex items-center gap-1.5 transition-colors">
                 <svg class="w-3.5 h-3.5 text-stone-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
@@ -965,6 +977,97 @@
         <button type="button" onclick="importManualPlan()" class="px-5 py-2.5 rounded-xl bg-terracotta-600 hover:bg-terracotta-700 text-white text-xs sm:text-sm font-bold shadow-sm">
           Import Schedule &amp; Build Timers
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL 7: RETHINK / FIX SCHEDULE TIMING                                -->
+  <!-- ===================================================================== -->
+  <div id="modal-rethink-plan" class="hidden fixed inset-0 z-50 bg-charcoal/60 backdrop-blur-sm flex items-center justify-center p-4 print:hidden">
+    <div class="bg-white rounded-2xl shadow-2xl border border-stone-200 w-full max-w-xl max-h-[92vh] flex flex-col overflow-hidden">
+      <div class="px-6 py-4 border-b border-stone-200 flex items-start justify-between gap-3">
+        <div>
+          <h3 class="text-lg font-bold text-charcoal">Rethink Schedule Times</h3>
+          <p class="text-xs text-stone-500 mt-0.5">Tell the AI what looks off and it will recalculate the schedule backward from your serving time.</p>
+        </div>
+        <button type="button" onclick="closeRethinkModal()" class="p-2 rounded-lg text-stone-400 hover:text-charcoal hover:bg-stone-100 shrink-0" aria-label="Close rethink modal">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-4 overflow-y-auto">
+        <div id="rethink-current-summary" class="rounded-xl bg-parchment/70 border border-stone-200 px-3.5 py-2.5 text-xs font-medium text-stone-700"></div>
+
+        <!-- One-Tap Common Timing Issues -->
+        <div class="space-y-1.5">
+          <span class="block text-[11px] font-bold uppercase tracking-wider text-stone-500">Quick Issues (Click to add)</span>
+          <div class="flex flex-wrap gap-1.5">
+            <button type="button" onclick="appendRethinkChip('The main dish finishes way too early before serve time — anchor its resting time right before dinner so it stays hot.')" class="px-2.5 py-1.5 rounded-lg bg-cream hover:bg-parchment border border-stone-200 text-[11px] font-semibold text-charcoal transition-colors">
+              Main dish done too early
+            </button>
+            <button type="button" onclick="appendRethinkChip('Hot side dishes are finishing too early and will get cold before serving.')" class="px-2.5 py-1.5 rounded-lg bg-cream hover:bg-parchment border border-stone-200 text-[11px] font-semibold text-charcoal transition-colors">
+              Sides finish too early
+            </button>
+            <button type="button" onclick="appendRethinkChip('There is a long dead gap between finishing cooking and serving — tighten the backward math.')" class="px-2.5 py-1.5 rounded-lg bg-cream hover:bg-parchment border border-stone-200 text-[11px] font-semibold text-charcoal transition-colors">
+              Big idle gap before dinner
+            </button>
+            <button type="button" onclick="appendRethinkChip('Two dishes overlap on the same oven or burner at the same time — fix the conflict.')" class="px-2.5 py-1.5 rounded-lg bg-cream hover:bg-parchment border border-stone-200 text-[11px] font-semibold text-charcoal transition-colors">
+              Oven / burner conflict
+            </button>
+            <button type="button" onclick="appendRethinkChip('Some steps are too vague or missing exact times and temperatures — make every step specific.')" class="px-2.5 py-1.5 rounded-lg bg-cream hover:bg-parchment border border-stone-200 text-[11px] font-semibold text-charcoal transition-colors">
+              Need clearer instructions
+            </button>
+          </div>
+        </div>
+
+        <!-- Custom Feedback Textarea -->
+        <div class="space-y-1.5">
+          <label for="rethink-feedback-input" class="block text-xs font-semibold uppercase tracking-wider text-stone-500">What is wrong with the current times?</label>
+          <textarea id="rethink-feedback-input" rows="4" placeholder="Example: You have the turkey resting at 2:40 PM when dinner is at 5:00 PM. It should finish roasting around 4:15 PM and rest until 5:00 PM while the stuffing bakes..." class="w-full rounded-xl border border-stone-300 bg-cream/40 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-terracotta-500"></textarea>
+        </div>
+
+        <label class="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-stone-50 border border-stone-200/80 cursor-pointer">
+          <input id="rethink-keep-makeahead" type="checkbox" checked class="h-4 w-4 rounded border-stone-300 accent-terracotta-600 shrink-0">
+          <span class="text-xs font-medium text-stone-700">Keep existing Make-Ahead items unless timing requires a change</span>
+        </label>
+
+        <!-- Error Diagnostics Box inside Rethink Modal -->
+        <div id="rethink-error" class="hidden rounded-xl bg-red-50 border border-red-200 p-3.5 text-xs text-red-800 space-y-2">
+          <p id="rethink-error-text" class="font-bold"></p>
+          <div id="rethink-error-details" class="hidden rounded-lg bg-white/80 border border-red-200/80 p-2.5 space-y-1 font-mono text-[11px] text-stone-700 overflow-x-auto"></div>
+          <div class="flex flex-wrap items-center gap-2 pt-0.5">
+            <button type="button" onclick="openManualRethinkModal()" class="px-3 py-1.5 rounded-lg bg-sage-700 hover:bg-sage-600 text-white text-xs font-bold transition-colors">
+              Use Copy &amp; Paste Revision
+            </button>
+            <button type="button" onclick="closeRethinkModal(); openAiSettingsModal(false);" class="px-3 py-1.5 rounded-lg bg-white hover:bg-stone-50 border border-red-200 text-red-800 text-xs font-semibold transition-colors">
+              Open API Settings
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="px-6 py-4 border-t border-stone-200 bg-cream/60 flex flex-wrap items-center justify-between gap-2">
+        <button type="button" onclick="closeRethinkModal()" class="px-4 py-2.5 rounded-xl border border-stone-300 bg-white hover:bg-stone-50 text-xs sm:text-sm font-semibold text-stone-700">
+          Cancel
+        </button>
+        <div class="flex flex-wrap items-center gap-2">
+          <button type="button" onclick="openManualRethinkModal()" class="px-3.5 py-2.5 rounded-xl border border-stone-300 bg-white hover:bg-parchment text-xs font-bold text-charcoal transition-colors">
+            Copy Revision Prompt
+          </button>
+          <button id="btn-rethink-submit" type="button" onclick="submitRethinkPlan()" class="px-5 py-2.5 rounded-xl bg-terracotta-600 hover:bg-terracotta-700 disabled:opacity-60 disabled:cursor-not-allowed text-white text-xs sm:text-sm font-bold shadow-sm flex items-center gap-2 transition-colors">
+            <svg id="icon-rethink-refresh" class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+            <svg id="icon-rethink-spinner" class="w-4 h-4 animate-spin hidden shrink-0" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span id="btn-rethink-label">Rethink Schedule Times</span>
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -2460,6 +2563,7 @@ CRITICAL BACKWARD-SCHEDULING RULES (READ CAREFULLY — DO NOT START COOKING AT S
        * ${exStep4} (40m before dinner): offsetMinutesBeforeServe = 40, durationMinutes = 40 (Rest turkey on counter; oven is now free to bake stuffing!)
        * ${serveClock} (dinner is served!): offsetMinutesBeforeServe = 0, durationMinutes = 0 (Carve turkey & serve all dishes hot)
 - FINISH-BY-SERVING RULE: For every cooking, baking, roasting, boiling, simmering, or resting step, "offsetMinutesBeforeServe" MUST BE >= "durationMinutes" (so the step ends at or before ${serveClock}). Only final plating/carving/serving at the very end should have offsetMinutesBeforeServe = 0.
+- NO DEAD GAPS / HOT-TO-TABLE RULE: Anchor the final stage of the main dish and all hot sides tightly to ${serveClock}. For example, if a turkey needs 40 minutes to rest before carving at ${serveClock}, it MUST come out of the oven at ${exStep4} (offsetMinutesBeforeServe = 40), NEVER 2+ hours early! Double-check every step's math so hot food does not sit around getting cold.
 - Sort "timelineSteps" chronologically from EARLIEST step (largest positive offsetMinutesBeforeServe) down to serving time (offsetMinutesBeforeServe = 0).
 - NEVER use negative numbers for offsetMinutesBeforeServe, and NEVER count forward from 0 for the first step.
 
@@ -2689,16 +2793,17 @@ Build a complete, conflict-free make-ahead guide and detailed chronological cook
     }
 
     /** Call Google Gemini API (supports both Gemini models with responseSchema AND Gemma models on the separate free pool). */
-    async function callGeminiAPI() {
+    async function callGeminiAPI(customUserPrompt = null, statusLabelEl = null) {
       const apiKey = getActiveApiKey("gemini");
       const stationEnum = Object.keys(getStationsMap());
       const candidates = buildCandidateModelsForProvider("gemini", 6);
       const primaryModel = candidates[0];
-      const labelEl = document.getElementById("btn-generate-label");
+      const labelEl = statusLabelEl || document.getElementById("btn-generate-label");
+      const userPromptText = customUserPrompt || buildUserPrompt();
 
       const geminiPayload = {
         systemInstruction: { parts: [{ text: buildSystemPrompt() }] },
-        contents: [{ role: "user", parts: [{ text: buildUserPrompt() }] }],
+        contents: [{ role: "user", parts: [{ text: userPromptText }] }],
         generationConfig: {
           temperature: 0.25,
           maxOutputTokens: 8192,
@@ -2756,7 +2861,7 @@ Build a complete, conflict-free make-ahead guide and detailed chronological cook
       const gemmaPayload = {
         contents: [{
           role: "user",
-          parts: [{ text: `${buildSystemPrompt()}\n\n${buildJsonSchemaInstruction()}\n\n${buildUserPrompt()}` }]
+          parts: [{ text: `${buildSystemPrompt()}\n\n${buildJsonSchemaInstruction()}\n\n${userPromptText}` }]
         }],
         generationConfig: { temperature: 0.25, maxOutputTokens: 8192 }
       };
@@ -2810,7 +2915,7 @@ Build a complete, conflict-free make-ahead guide and detailed chronological cook
     }
 
     /** Shared OpenAI-compatible caller for Groq, OpenRouter, and OpenAI with per-model error diagnostics. */
-    async function callOpenAICompatibleAPI(provider) {
+    async function callOpenAICompatibleAPI(provider, customUserPrompt = null, statusLabelEl = null) {
       const apiKey = getActiveApiKey(provider);
       const endpoint = provider === "groq"
         ? "https://api.groq.com/openai/v1/chat/completions"
@@ -2822,7 +2927,7 @@ Build a complete, conflict-free make-ahead guide and detailed chronological cook
         ? [getActiveModel("openai")]
         : buildCandidateModelsForProvider(provider, 5);
       const primaryModel = candidates[0];
-      const labelEl = document.getElementById("btn-generate-label");
+      const labelEl = statusLabelEl || document.getElementById("btn-generate-label");
 
       const headers = {
         "Content-Type": "application/json",
@@ -2834,7 +2939,7 @@ Build a complete, conflict-free make-ahead guide and detailed chronological cook
       }
 
       const systemContent = buildSystemPrompt() + "\n\n" + buildJsonSchemaInstruction();
-      const userContent = buildUserPrompt();
+      const userContent = customUserPrompt || buildUserPrompt();
       const attemptLog = [];
       let lastErr = null;
 
@@ -3214,12 +3319,12 @@ Build a complete, conflict-free make-ahead guide and detailed chronological cook
     }
 
     /** Open the 100% Free Copy & Paste Mode modal prefilled with the exact recipes & hardware prompt. */
-    function openManualAiModal() {
-      if (state.recipes.length === 0) {
+    function openManualAiModal(customPromptOverride = null) {
+      if (!customPromptOverride && state.recipes.length === 0) {
         showToast("Add at least one recipe (or load the Sample Thanksgiving Menu) first!", "error");
         return;
       }
-      const combinedPrompt = `${buildSystemPrompt()}\n\n${buildJsonSchemaInstruction()}\n\n${buildUserPrompt()}`;
+      const combinedPrompt = customPromptOverride || `${buildSystemPrompt()}\n\n${buildJsonSchemaInstruction()}\n\n${buildUserPrompt()}`;
       document.getElementById("manual-prompt-box").value = combinedPrompt;
       document.getElementById("manual-response-input").value = "";
       document.getElementById("manual-import-error").classList.add("hidden");
@@ -3276,6 +3381,204 @@ Build a complete, conflict-free make-ahead guide and detailed chronological cook
         sparkle.classList.remove("hidden");
         spinner.classList.add("hidden");
         label.textContent = "Generate Schedule & Timers";
+      }
+    }
+
+    /**
+     * =========================================================================
+     * 7B. RETHINK / FIX SCHEDULE TIMING WORKFLOW
+     * =========================================================================
+     */
+    function openRethinkModal() {
+      if (!state.plan || !Array.isArray(state.plan.timelineSteps) || state.plan.timelineSteps.length === 0) {
+        showToast("Generate a schedule first before asking the AI to rethink the times.", "error");
+        return;
+      }
+
+      const serveMins = parseServeTimeMinutes(state.config.serveTime);
+      const maxOffset = state.plan.timelineSteps.reduce(
+        (max, s) => Math.max(max, s.offsetMinutesBeforeServe || 0),
+        0
+      );
+      const startClock = formatClockTime(serveMins - maxOffset);
+      const serveClock = formatClockTime(serveMins);
+
+      const summaryEl = document.getElementById("rethink-current-summary");
+      if (summaryEl) {
+        summaryEl.innerHTML = `Current schedule: <strong>${startClock} &rarr; ${serveClock}</strong> (${state.plan.timelineSteps.length} steps) &bull; Provider: <strong>${escapeHtml(getProviderDisplayName())}</strong>`;
+      }
+
+      const errBox = document.getElementById("rethink-error");
+      const errDetails = document.getElementById("rethink-error-details");
+      if (errBox) errBox.classList.add("hidden");
+      if (errDetails) {
+        errDetails.classList.add("hidden");
+        errDetails.innerHTML = "";
+      }
+
+      document.getElementById("modal-rethink-plan").classList.remove("hidden");
+    }
+
+    function closeRethinkModal() {
+      document.getElementById("modal-rethink-plan").classList.add("hidden");
+    }
+
+    function appendRethinkChip(text) {
+      const input = document.getElementById("rethink-feedback-input");
+      if (!input) return;
+      const current = input.value.trim();
+      if (current.includes(text)) {
+        input.focus();
+        return;
+      }
+      input.value = current ? `${current}\n${text}` : text;
+      input.focus();
+    }
+
+    /** Build a revision prompt showing the current flawed timestamps + user's correction request. */
+    function buildRethinkUserPrompt(userFeedback, keepMakeAhead) {
+      const serveMins = parseServeTimeMinutes(state.config.serveTime);
+      const serveClock = formatClockTime(serveMins);
+      const stationIds = Object.keys(getStationsMap()).join(", ");
+
+      const currentStepsSummary = (state.plan?.timelineSteps || []).map((step, idx) => {
+        const startMins = serveMins - (step.offsetMinutesBeforeServe || 0);
+        const startClock = formatClockTime(startMins);
+        const endClock = step.durationMinutes > 0 ? formatClockTime(startMins + step.durationMinutes) : startClock;
+        return `${idx + 1}. ${startClock}–${endClock} (offsetMinutesBeforeServe=${step.offsetMinutesBeforeServe}, duration=${step.durationMinutes}m, station=${step.station}) | ${step.dish}: ${step.title}`;
+      }).join("\n");
+
+      const currentMakeAheadSummary = (state.plan?.makeAheadItems || []).map((m, idx) => (
+        `${idx + 1}. ${m.dish} (${m.whenToMake}, ${m.durationMinutes}m)`
+      )).join("\n");
+
+      const recipeBlock = state.recipes.map((r, idx) => (
+        `RECIPE ${idx + 1}: ${r.name}\nIngredients:\n${r.ingredients}\nInstructions:\n${r.instructions}`
+      )).join("\n\n---\n\n");
+
+      const feedbackText = (userFeedback || "").trim() ||
+        `The current step times do not line up properly with the ${serveClock} serving time. Recalculate every step strictly backward from ${serveClock} so hot dishes and resting periods finish right on time for dinner with no unexplained gaps.`;
+
+      return `REVISION REQUEST — FIX THE BROKEN TIMING IN THIS SCHEDULE!
+
+Meal Occasion: ${state.config.mealName}
+Target Serving Time (FOOD ON TABLE): ${serveClock} (${state.config.serveTime})
+Kitchen Equipment: ${formatKitchenSummaryText()} (station IDs: ${stationIds}).
+
+USER'S TIMING CORRECTION FEEDBACK (MUST FIX THIS!):
+"""
+${feedbackText}
+"""
+
+CURRENT FLAWED TIMELINE THAT NEEDS TO BE FIXED:
+${currentStepsSummary}
+${currentMakeAheadSummary ? `\nCURRENT MAKE-AHEAD ITEMS:\n${currentMakeAheadSummary}\n` : ""}
+${keepMakeAhead ? "NOTE: Keep the existing make-ahead items unless fixing the timing requires moving a dish.\n" : ""}
+STRICT TIMING VERIFICATION CHECKLIST BEFORE YOU OUTPUT JSON:
+1. Work BACKWARD from ${serveClock} for EVERY dish.
+2. Anchor the main dish's resting/finishing time directly to ${serveClock} (e.g., if a roast rests 40 minutes, resting starts at ${formatClockTime(serveMins - 40)} with offsetMinutesBeforeServe = 40, and roasting finishes at ${formatClockTime(serveMins - 40)} — NOT hours earlier!).
+3. Check the arithmetic of EVERY step: startTime = ${serveClock} minus offsetMinutesBeforeServe, and endTime = startTime + durationMinutes <= ${serveClock}.
+4. Keep hot side dishes finishing within 0–20 minutes of ${serveClock} (or actively held warm), with zero multi-hour dead gaps.
+5. Keep all detailed ingredients, quantities, oven temperatures, burner assignments, and conflict-free scheduling intact.
+
+ORIGINAL RECIPES FOR REFERENCE:
+${recipeBlock}
+
+Return the COMPLETE corrected JSON schedule.`;
+    }
+
+    function openManualRethinkModal() {
+      if (!state.plan) return;
+      const feedback = document.getElementById("rethink-feedback-input").value.trim();
+      const keepMakeAhead = document.getElementById("rethink-keep-makeahead").checked;
+      const rethinkUserPrompt = buildRethinkUserPrompt(feedback, keepMakeAhead);
+      const combinedPrompt = `${buildSystemPrompt()}\n\n${buildJsonSchemaInstruction()}\n\n${rethinkUserPrompt}`;
+      closeRethinkModal();
+      openManualAiModal(combinedPrompt);
+    }
+
+    function setRethinkLoadingUI(isLoading) {
+      const btn = document.getElementById("btn-rethink-submit");
+      const refreshIcon = document.getElementById("icon-rethink-refresh");
+      const spinner = document.getElementById("icon-rethink-spinner");
+      const label = document.getElementById("btn-rethink-label");
+      if (!btn) return;
+      btn.disabled = isLoading;
+      if (isLoading) {
+        refreshIcon.classList.add("hidden");
+        spinner.classList.remove("hidden");
+        label.textContent = "Recalculating Times...";
+      } else {
+        refreshIcon.classList.remove("hidden");
+        spinner.classList.add("hidden");
+        label.textContent = "Rethink Schedule Times";
+      }
+    }
+
+    async function submitRethinkPlan() {
+      if (!state.plan) return;
+
+      const errBox = document.getElementById("rethink-error");
+      const errText = document.getElementById("rethink-error-text");
+      const errDetails = document.getElementById("rethink-error-details");
+      errBox.classList.add("hidden");
+      errDetails.classList.add("hidden");
+      errDetails.innerHTML = "";
+
+      const provider = state.config.provider;
+      if (provider === "manual") {
+        openManualRethinkModal();
+        return;
+      }
+
+      if (!getActiveApiKey(provider)) {
+        errText.textContent = `Enter your ${getProviderDisplayName(provider)} API key in Settings, or click "Use Copy & Paste Revision" below.`;
+        errBox.classList.remove("hidden");
+        return;
+      }
+
+      const feedback = document.getElementById("rethink-feedback-input").value.trim();
+      const keepMakeAhead = document.getElementById("rethink-keep-makeahead").checked;
+      const rethinkPrompt = buildRethinkUserPrompt(feedback, keepMakeAhead);
+      const statusLabelEl = document.getElementById("btn-rethink-label");
+
+      setRethinkLoadingUI(true);
+
+      try {
+        const res = provider === "gemini"
+          ? await callGeminiAPI(rethinkPrompt, statusLabelEl)
+          : await callOpenAICompatibleAPI(provider, rethinkPrompt, statusLabelEl);
+
+        const fallbackNotice = res.fellBackFrom
+          ? ` (auto-switched to ${res.modelUsed})`
+          : "";
+        closeRethinkModal();
+        document.getElementById("rethink-feedback-input").value = "";
+        applyGeneratedPlan(res.data, ` • Times recalculated!${fallbackNotice}`);
+      } catch (err) {
+        console.error("Rethink schedule failed:", err);
+        errText.textContent = err.message || "Could not recalculate schedule times.";
+        if (Array.isArray(err.attemptLog) && err.attemptLog.length > 0) {
+          errDetails.innerHTML = err.attemptLog.map((item) => {
+            const code = item.status ? `HTTP ${item.status}` : "NET ERR";
+            const badge = item.status === 503
+              ? "bg-amber-100 text-amber-800"
+              : "bg-red-100 text-red-700";
+            return `
+              <div class="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-2 py-1 border-b border-red-100 last:border-b-0">
+                <div class="flex items-center gap-1.5 shrink-0">
+                  <span class="px-1.5 py-0.5 rounded text-[10px] font-bold ${badge}">${code}</span>
+                  <span class="font-bold text-charcoal">${escapeHtml(item.model)}</span>
+                </div>
+                <span class="text-stone-600 break-words">${escapeHtml(item.message)}</span>
+              </div>
+            `;
+          }).join("");
+          errDetails.classList.remove("hidden");
+        }
+        errBox.classList.remove("hidden");
+      } finally {
+        setRethinkLoadingUI(false);
       }
     }
 
